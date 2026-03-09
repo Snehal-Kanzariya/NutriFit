@@ -1,0 +1,110 @@
+[
+  {
+    "id": "booster-001",
+    "name": "Handful of Peanuts",
+    "protein": 7,
+    "cal": 165,
+    "prepTime": 0,
+    "type": "add-on",
+    "description": "30g roasted peanuts — instant protein boost with healthy fats. Keep a jar on your desk."
+  },
+  {
+    "id": "booster-002",
+    "name": "Glass of Milk",
+    "protein": 8,
+    "cal": 150,
+    "prepTime": 1,
+    "type": "add-on",
+    "description": "250ml full-fat milk — complete protein with calcium and B12. The classic Indian booster."
+  },
+  {
+    "id": "booster-003",
+    "name": "2 Boiled Eggs",
+    "protein": 12,
+    "cal": 155,
+    "prepTime": 8,
+    "type": "add-on",
+    "description": "2 hard-boiled eggs — most bioavailable protein source. Can be prepped in advance."
+  },
+  {
+    "id": "booster-004",
+    "name": "Cup of Moong Sprouts",
+    "protein": 7,
+    "cal": 80,
+    "prepTime": 2,
+    "type": "add-on",
+    "description": "1 cup sprouted moong — raw protein + digestive enzymes + Vitamin C. Sprout at home in 48 hours."
+  },
+  {
+    "id": "booster-005",
+    "name": "Paneer Cubes (30g)",
+    "protein": 6,
+    "cal": 85,
+    "prepTime": 0,
+    "type": "add-on",
+    "description": "30g fresh paneer cubes with chaat masala — quick, satisfying protein hit."
+  },
+  {
+    "id": "booster-006",
+    "name": "Sattu Drink",
+    "protein": 7,
+    "cal": 130,
+    "prepTime": 2,
+    "type": "add-on",
+    "description": "3 tbsp sattu in water with lemon and black salt — Bihar's ancient protein drink."
+  },
+  {
+    "id": "booster-007",
+    "name": "Greek Yogurt (Thick Curd)",
+    "protein": 10,
+    "cal": 100,
+    "prepTime": 0,
+    "type": "add-on",
+    "description": "150g hung curd or Greek yogurt — gut-friendly protein. Add honey or fruit for taste."
+  },
+  {
+    "id": "booster-008",
+    "name": "Soya Chunks (Boiled)",
+    "protein": 12,
+    "cal": 110,
+    "prepTime": 5,
+    "type": "add-on",
+    "description": "½ cup soya chunks soaked and boiled with spices — cheapest high-protein food in India."
+  },
+  {
+    "id": "booster-009",
+    "name": "Protein Bar",
+    "protein": 20,
+    "cal": 220,
+    "prepTime": 0,
+    "type": "add-on",
+    "description": "1 whey/plant protein bar — convenient on-the-go booster. Check label for sugar content."
+  },
+  {
+    "id": "booster-010",
+    "name": "Cheese Slice",
+    "protein": 4,
+    "cal": 80,
+    "prepTime": 0,
+    "type": "add-on",
+    "description": "1 processed cheese slice — quick calcium + protein. Add to toast, roti, or eat directly."
+  },
+  {
+    "id": "booster-011",
+    "name": "Roasted Chana",
+    "protein": 9,
+    "cal": 145,
+    "prepTime": 0,
+    "type": "add-on",
+    "description": "½ cup roasted Bengal gram — ancient Indian snack with high protein and fiber. Eat with jaggery."
+  },
+  {
+    "id": "booster-012",
+    "name": "Peanut Butter (2 tbsp)",
+    "protein": 8,
+    "cal": 190,
+    "prepTime": 0,
+    "type": "add-on",
+    "description": "2 tbsp natural peanut butter on toast or with banana — protein + healthy fats combo."
+  }
+]
