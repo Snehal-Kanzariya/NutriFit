@@ -21,6 +21,7 @@ import ProteinProgressRing   from '../components/protein/ProteinProgressRing'
 import ProteinPerMealBar     from '../components/protein/ProteinPerMealBar'
 import DailyOverview         from '../components/nutrition/DailyOverview'
 import ScheduleSheet         from '../components/schedule/ScheduleSheet'
+import AiCoachCard           from '../components/ai/AiCoachCard'
 
 // ── Tab definitions ─────────────────────────────────────────────────────────
 const TABS = [
@@ -197,10 +198,8 @@ function NutrientsTab({ plan }) {
 
 function AiTab() {
   return (
-    <div className="text-center py-8 space-y-2 text-gray-500">
-      <span className="text-3xl">🤖</span>
-      <p className="text-sm">AI Coach</p>
-      <p className="text-xs text-gray-600">Personalized tips coming soon</p>
+    <div className="pb-6">
+      <AiCoachCard />
     </div>
   )
 }
