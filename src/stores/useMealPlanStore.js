@@ -1,60 +1,74 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+/**
+ * todayPlan shape (from generateDayPlan()):
+ *   { slots: SlotResult[], totalProtein, proteinTarget, hasWorkout, date }
+ *
+ * SlotResult: { type, time, label, proteinTarget, meal, proteinMatch, deltaLabel, fallback }
+ */
 export const useMealPlanStore = create(
   persist(
     (set, get) => ({
-      // Today's plan: array of { slot, meal, proteinTarget, proteinActual, proteinMatch }
-      todayPlan: [],
+      // Full plan object from mealEngine.generateDayPlan()
+      todayPlan: null,
 
-      // Protein booster suggestions
-      boosters: [],
+      // Slots that have been skipped (type strings)
+      skippedTypes: [],
 
-      // Loading state
+      // History entry per skip: [{ type, label, proteinWas, boosts }]
+      skipHistory: [],
+
+      // Protein boosters the user has "added" to their day
+      addedBoosters: [],
+
+      // Loading flag
       isGenerating: false,
 
-      setTodayPlan: (plan) => set({ todayPlan: plan }),
+      // ── Plan lifecycle ───────────────────────────────────────────────────
+      setTodayPlan: (plan) =>
+        set({ todayPlan: plan, skippedTypes: [], skipHistory: [], addedBoosters: [] }),
 
-      updateSlot: (slotId, updates) =>
+      // Called after mealEngine.applySkip() resolves
+      applySkipResult: (updatedPlan, skippedType, skippedLabel, proteinWas, boosts) =>
         set((s) => ({
-          todayPlan: s.todayPlan.map((item) =>
-            item.slot === slotId ? { ...item, ...updates } : item
-          ),
+          todayPlan:    updatedPlan,
+          skippedTypes: [...s.skippedTypes, skippedType],
+          skipHistory:  [...s.skipHistory, { type: skippedType, label: skippedLabel, proteinWas, boosts }],
         })),
 
-      skipSlot: (slotId) => {
-        const plan = get().todayPlan
-        const skipped = plan.find((i) => i.slot === slotId)
-        if (!skipped) return
-        const skippedProtein = skipped.proteinTarget
-        const remaining = plan.filter((i) => i.slot !== slotId && !i.skipped)
-        const totalRemaining = remaining.reduce((a, i) => a + i.proteinTarget, 0)
+      // Swap a meal in a slot with a getSwapAlternatives() result
+      swapMealInSlot: (slotType, mealResult) =>
+        set((s) => {
+          if (!s.todayPlan?.slots) return s
+          const slots = s.todayPlan.slots.map((slot) =>
+            slot.type === slotType
+              ? {
+                  ...slot,
+                  meal:         mealResult.meal,
+                  proteinMatch: mealResult.proteinMatch,
+                  deltaLabel:   mealResult.deltaLabel,
+                  fallback:     mealResult.fallback,
+                  inTolerance:  mealResult.inTolerance,
+                }
+              : slot
+          )
+          const totalProtein = slots.reduce((sum, sl) => sum + (sl.meal?.protein ?? 0), 0)
+          return { todayPlan: { ...s.todayPlan, slots, totalProtein } }
+        }),
 
-        const updated = plan.map((item) => {
-          if (item.slot === slotId) return { ...item, skipped: true }
-          if (remaining.find((r) => r.slot === item.slot)) {
-            const extra = totalRemaining > 0
-              ? Math.round((item.proteinTarget / totalRemaining) * skippedProtein)
-              : 0
-            return { ...item, proteinTarget: item.proteinTarget + extra }
-          }
-          return item
-        })
-        set({ todayPlan: updated })
-      },
+      // ── Protein boosters ─────────────────────────────────────────────────
+      addBooster: (booster) =>
+        set((s) => ({ addedBoosters: [...s.addedBoosters, booster] })),
 
-      markEaten: (slotId, actualProtein) =>
-        set((s) => ({
-          todayPlan: s.todayPlan.map((item) =>
-            item.slot === slotId
-              ? { ...item, eaten: true, proteinActual: actualProtein }
-              : item
-          ),
-        })),
+      removeBooster: (boosterId) =>
+        set((s) => ({ addedBoosters: s.addedBoosters.filter((b) => b.id !== boosterId) })),
 
-      setBoosters: (boosters) => set({ boosters }),
+      // ── Misc ─────────────────────────────────────────────────────────────
       setGenerating: (val) => set({ isGenerating: val }),
-      clearPlan: () => set({ todayPlan: [], boosters: [] }),
+
+      clearPlan: () =>
+        set({ todayPlan: null, skippedTypes: [], skipHistory: [], addedBoosters: [], isGenerating: false }),
     }),
     { name: 'nutrifit-mealplan' }
   )
