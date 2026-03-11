@@ -1,8 +1,15 @@
-import { useEffect }                          from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect }                                         from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence }                            from 'framer-motion'
+
 import { useProfileStore }  from './stores/useProfileStore'
 import { useMealPlanStore } from './stores/useMealPlanStore'
 import { saveDayPlan }      from './services/storage'
+
+import ErrorBoundary from './components/ErrorBoundary'
+import OfflineBadge  from './components/ui/OfflineBadge'
+import BottomNav     from './components/layout/BottomNav'
+
 import Onboarding from './pages/Onboarding'
 import Dashboard  from './pages/Dashboard'
 import MealPlan   from './pages/MealPlan'
@@ -10,9 +17,9 @@ import Nutrients  from './pages/Nutrients'
 import Profile    from './pages/Profile'
 import History    from './pages/History'
 import Settings   from './pages/Settings'
-import BottomNav  from './components/layout/BottomNav'
 
-/** Auto-save today's plan to IndexedDB whenever it changes */
+// ── Auto-save today's plan to IndexedDB on every change ──────────────────────
+
 function PlanPersistence() {
   const { todayPlan, skippedTypes, addedBoosters } = useMealPlanStore()
   const { proteinTarget } = useProfileStore()
@@ -32,93 +39,133 @@ function PlanPersistence() {
     const target   = todayPlan.proteinTarget ?? proteinTarget ?? 80
 
     saveDayPlan(todayStr, todayPlan, target, protein, calories)
-  }, [todayPlan, skippedTypes, addedBoosters])
+  }, [todayPlan, skippedTypes, addedBoosters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null
 }
 
-function AppLayout({ children }) {
+// ── Page transition wrapper ───────────────────────────────────────────────────
+
+const PAGE_VARIANTS = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0,  transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] } },
+  exit:    { opacity: 0, y: -8, transition: { duration: 0.15 } },
+}
+
+function AnimatedPage({ children }) {
+  return (
+    <motion.div
+      variants={PAGE_VARIANTS}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="min-h-full"
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// ── App shell with animated routes ───────────────────────────────────────────
+
+function AppShell() {
+  const location    = useLocation()
+  const isOnboarded = useProfileStore((s) => s.isOnboarded)
+
   return (
     <div className="flex justify-center min-h-screen bg-gray-950">
       <div className="relative w-full max-w-[480px] min-h-screen bg-gray-950 flex flex-col">
         <PlanPersistence />
-        <main className="flex-1 pb-20">
-          {children}
+        <OfflineBadge />
+
+        <main className="flex-1 pb-20 overflow-x-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            <Routes location={location} key={location.pathname}>
+              {/* Onboarding — no shell chrome */}
+              <Route
+                path="/onboarding"
+                element={
+                  <AnimatedPage><Onboarding /></AnimatedPage>
+                }
+              />
+
+              {/* Protected routes — with BottomNav */}
+              <Route
+                path="/"
+                element={
+                  isOnboarded
+                    ? <AnimatedPage><Dashboard /></AnimatedPage>
+                    : <Navigate to="/onboarding" replace />
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  isOnboarded
+                    ? <AnimatedPage><Dashboard /></AnimatedPage>
+                    : <Navigate to="/onboarding" replace />
+                }
+              />
+              <Route
+                path="/meals"
+                element={
+                  isOnboarded
+                    ? <AnimatedPage><MealPlan /></AnimatedPage>
+                    : <Navigate to="/onboarding" replace />
+                }
+              />
+              <Route
+                path="/nutrients"
+                element={
+                  isOnboarded
+                    ? <AnimatedPage><Nutrients /></AnimatedPage>
+                    : <Navigate to="/onboarding" replace />
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  isOnboarded
+                    ? <AnimatedPage><Profile /></AnimatedPage>
+                    : <Navigate to="/onboarding" replace />
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  isOnboarded
+                    ? <AnimatedPage><History /></AnimatedPage>
+                    : <Navigate to="/onboarding" replace />
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  isOnboarded
+                    ? <AnimatedPage><Settings /></AnimatedPage>
+                    : <Navigate to="/onboarding" replace />
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AnimatePresence>
         </main>
-        <BottomNav />
+
+        {/* BottomNav only on protected routes */}
+        {isOnboarded && location.pathname !== '/onboarding' && <BottomNav />}
       </div>
     </div>
   )
 }
 
-function ProtectedRoute({ children }) {
-  const isOnboarded = useProfileStore((s) => s.isOnboarded)
-  return isOnboarded ? children : <Navigate to="/onboarding" replace />
-}
+// ── Root ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Dashboard /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Dashboard /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/meals"
-          element={
-            <ProtectedRoute>
-              <AppLayout><MealPlan /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/nutrients"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Nutrients /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Profile /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute>
-              <AppLayout><History /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Settings /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppShell />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
