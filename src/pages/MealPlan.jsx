@@ -16,7 +16,8 @@ import SkippedMealBanner     from '../components/meals/SkippedMealBanner'
 import ProteinBooster        from '../components/protein/ProteinBooster'
 import { MealCardSkeleton }  from '../components/ui/SkeletonCard'
 
-import { applySkip, generateDayPlan } from '../services/mealEngine'
+import { applySkip, generateDayPlan }    from '../services/mealEngine'
+import { getAchievableProtein }           from '../services/proteinAllocator'
 
 import mealsNonveg     from '../data/meals-nonveg.json'
 import mealsVeg        from '../data/meals-veg.json'
@@ -85,23 +86,28 @@ export default function MealPlan() {
 
   // ── Regenerate entire plan ────────────────────────────────────────────────
   function handleRegenerate() {
-    setGenerating(true)
-    const scheduleType  = PRESET_MAP[activePreset] || 'wfh'
-    const workoutType   = ACTIVITY_MAP[todayActivity] || 'rest'
-    const hasWorkout    = workoutType !== 'rest'
-    const profile       = { diet, canCook: effectiveCanCook, weight, height, age, gender, activityLevel, goal }
+    try {
+      setGenerating(true)
+      const scheduleType = PRESET_MAP[activePreset] || 'wfh'
+      const workoutType  = ACTIVITY_MAP[todayActivity] || 'rest'
+      const hasWorkout   = workoutType !== 'rest'
+      const profile      = { diet, canCook: effectiveCanCook, weight, height, age, gender, activityLevel, goal }
 
-    const newPlan = generateDayPlan(
-      profile,
-      { scheduleType },
-      target,
-      hasWorkout ? todayWorkoutTime : null,
-      todayWorkoutDuration || 60,
-      workoutType,
-      mealDB
-    )
-    setTodayPlan(newPlan)
-    setGenerating(false)
+      const newPlan = generateDayPlan(
+        profile,
+        { scheduleType },
+        target,
+        hasWorkout ? todayWorkoutTime : null,
+        todayWorkoutDuration || 60,
+        workoutType,
+        mealDB
+      )
+      setTodayPlan(newPlan)
+    } catch (err) {
+      console.error('[MealPlan] regenerate failed:', err)
+    } finally {
+      setGenerating(false)
+    }
   }
 
   // ── Generating skeleton ───────────────────────────────────────────────────
@@ -176,6 +182,24 @@ export default function MealPlan() {
             />
           </motion.div>
         ))}
+
+        {/* ── Supplement note (shown when target exceeds DB capacity) ──── */}
+        {(() => {
+          const slotTypes = slots.map(s => s.type)
+          const { needsSupplement, achievable } = getAchievableProtein(target, slotTypes)
+          if (!needsSupplement) return null
+          return (
+            <div className="bg-blue-950/40 border border-blue-800/50 rounded-2xl px-4 py-3 flex gap-3 items-start">
+              <span className="text-lg mt-0.5">💊</span>
+              <div>
+                <p className="text-blue-300 text-xs font-semibold">High protein target</p>
+                <p className="text-blue-400/80 text-[11px] mt-0.5">
+                  Food covers ~{achievable}g. Add protein powder or supplements to reach your {target}g goal.
+                </p>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* ── Protein booster card ───────────────────────────────────────── */}
         <ProteinBooster

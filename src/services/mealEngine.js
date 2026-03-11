@@ -96,26 +96,36 @@ export function selectMealByProtein(
   usedMeals = new Set(),
   rng = Math.random
 ) {
-  // ── Step 1: Filter ────────────────────────────────────────────────────────
-  const filtered = mealDB.filter(
-    meal =>
-      meal.diet === diet &&
-      meal.type === slotType &&
-      matchesCookingAbility(meal, canCook) &&
-      !usedMeals.has(meal.id)
+  // ── Step 1: Multi-layer fallback pool — NEVER return null ─────────────────
+  // Layer 1: strict — diet + type + cooking + unused
+  let pool = mealDB.filter(
+    m => m.diet === diet && m.type === slotType && matchesCookingAbility(m, canCook) && !usedMeals.has(m.id)
   );
 
-  // If nothing left after filtering (extreme edge case), lift the usedMeals constraint
-  const pool = filtered.length > 0
-    ? filtered
-    : mealDB.filter(
-        meal =>
-          meal.diet === diet &&
-          meal.type === slotType &&
-          matchesCookingAbility(meal, canCook)
-      );
+  // Layer 2: lift cooking constraint (can happen when canCook=false and no quick meals exist)
+  if (pool.length === 0) {
+    pool = mealDB.filter(m => m.diet === diet && m.type === slotType && !usedMeals.has(m.id));
+  }
 
-  if (pool.length === 0) return null;
+  // Layer 3: allow already-used meals (all meals of this diet+type)
+  if (pool.length === 0) {
+    pool = mealDB.filter(m => m.diet === diet && m.type === slotType);
+  }
+
+  // Layer 4: any meal of this diet (different slot type is ok)
+  if (pool.length === 0) {
+    console.warn(`[mealEngine] No ${slotType} meals for diet=${diet} — using any ${diet} meal`);
+    pool = mealDB.filter(m => m.diet === diet && !usedMeals.has(m.id));
+    if (pool.length === 0) pool = mealDB.filter(m => m.diet === diet);
+  }
+
+  // Layer 5: absolute last resort — any meal in DB
+  if (pool.length === 0) {
+    console.warn(`[mealEngine] Absolute fallback for slot=${slotType} diet=${diet}`);
+    pool = [...mealDB];
+  }
+
+  if (pool.length === 0) return null; // mealDB itself is empty — caller's problem
 
   // ── Step 2: Sort by protein distance ─────────────────────────────────────
   const sorted = [...pool].sort((a, b) => proteinDistance(a, proteinTarget) - proteinDistance(b, proteinTarget));
