@@ -121,7 +121,9 @@ export default function Dashboard() {
     if (nextTotal >= target && liveProtein < target) {
       setShowCelebration(true)
       setTimeout(() => setShowCelebration(false), 3200)
+      return true
     }
+    return false
   }
 
   return (

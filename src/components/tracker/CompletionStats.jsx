@@ -18,7 +18,7 @@ function useStreak() {
       for (let i = days.length - 1; i >= 0; i--) {
         const d = days[i]
         if (d.date === today) continue
-        const ratio = d.proteinTarget > 0 ? (d.proteinEaten ?? 0) / d.proteinTarget : 0
+        const ratio = d.proteinTarget > 0 ? (d.proteinActual ?? 0) / d.proteinTarget : 0
         if (ratio >= 0.9) s++; else break
       }
       setStreak(s)

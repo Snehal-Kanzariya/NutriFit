@@ -44,7 +44,7 @@ export default function MealPlan() {
           goalCalories, setProteinTarget } = useProfileStore()
   const { activePreset, todayActivity, todayWorkoutTime, todayWorkoutDuration, todayCanCook,
           setCheckedIn } = useScheduleStore()
-  const { todayPlan, skippedTypes, addedBoosters, setTodayPlan, applySkipResult,
+  const { todayPlan, skippedTypes, addedBoosters, checkedMeals, setTodayPlan, applySkipResult,
           swapMealInSlot, setGenerating } = useMealPlanStore()
 
   const plan    = todayPlan
@@ -52,11 +52,14 @@ export default function MealPlan() {
   const target  = plan?.proteinTarget ?? proteinTarget ?? 80
   const mealDB  = MEAL_DB[diet] || mealsVeg
   const effectiveCanCook = todayCanCook ?? canCook ?? true
-
-  const { checkedMeals } = useMealPlanStore()
   const boosterProtein    = addedBoosters.reduce((s, b) => s + (b.protein ?? 0), 0)
   const checkedProtein    = Object.values(checkedMeals).reduce((s, v) => s + (v.protein ?? 0), 0)
   const eaten             = checkedProtein + boosterProtein
+
+  // ── Meal check handler (no celebration on this page) ─────────────────────
+  function handleMealCheck(_protein) {
+    return false
+  }
 
   // ── Skip handler ────────────────────────────────────────────────────────
   function handleSkip(slotType) {
@@ -182,6 +185,8 @@ export default function MealPlan() {
         <MealTimeline
           slots={slots}
           dailyTarget={target}
+          onCheck={handleMealCheck}
+          onTargetHit={() => {}}
         />
 
         {/* ── Supplement note (shown when target exceeds DB capacity) ──── */}
