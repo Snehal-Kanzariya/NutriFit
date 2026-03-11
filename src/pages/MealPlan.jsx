@@ -11,10 +11,10 @@ import { useProfileStore }    from '../stores/useProfileStore'
 import { useScheduleStore }   from '../stores/useScheduleStore'
 import { useMealPlanStore }   from '../stores/useMealPlanStore'
 
-import MealCard              from '../components/meals/MealCard'
 import SkippedMealBanner     from '../components/meals/SkippedMealBanner'
 import ProteinBooster        from '../components/protein/ProteinBooster'
 import { MealCardSkeleton }  from '../components/ui/SkeletonCard'
+import MealTimeline          from '../components/tracker/MealTimeline'
 
 import { applySkip, generateDayPlan }    from '../services/mealEngine'
 import { getAchievableProtein }           from '../services/proteinAllocator'
@@ -53,8 +53,10 @@ export default function MealPlan() {
   const mealDB  = MEAL_DB[diet] || mealsVeg
   const effectiveCanCook = todayCanCook ?? canCook ?? true
 
-  const boosterProtein = addedBoosters.reduce((s, b) => s + (b.protein ?? 0), 0)
-  const eaten          = (plan?.totalProtein ?? 0) + boosterProtein
+  const { checkedMeals } = useMealPlanStore()
+  const boosterProtein    = addedBoosters.reduce((s, b) => s + (b.protein ?? 0), 0)
+  const checkedProtein    = Object.values(checkedMeals).reduce((s, v) => s + (v.protein ?? 0), 0)
+  const eaten             = checkedProtein + boosterProtein
 
   // ── Skip handler ────────────────────────────────────────────────────────
   function handleSkip(slotType) {
@@ -173,27 +175,14 @@ export default function MealPlan() {
       </header>
 
       <div className="px-4 pb-8 space-y-3">
-        {/* ── Skipped meal banner ────────────────────────────────────────── */}
+        {/* ── Skipped meal banner (plan-level skips) ────────────────────── */}
         <SkippedMealBanner />
 
-        {/* ── Meal cards ────────────────────────────────────────────────── */}
-        {slots.map((slot, i) => (
-          <motion.div
-            key={slot.type}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <MealCard
-              slot={slot}
-              dailyTarget={target}
-              diet={diet}
-              canCook={effectiveCanCook}
-              onSkip={handleSkip}
-              onSwap={handleSwap}
-            />
-          </motion.div>
-        ))}
+        {/* ── Live meal timeline with trackable cards ────────────────────── */}
+        <MealTimeline
+          slots={slots}
+          dailyTarget={target}
+        />
 
         {/* ── Supplement note (shown when target exceeds DB capacity) ──── */}
         {(() => {

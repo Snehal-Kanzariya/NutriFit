@@ -1,46 +1,98 @@
 /**
  * Dashboard.jsx
- * Main daily view.
+ * Main daily view with live tracking system.
  *
  * States:
  *  A) Not checked in today → show MorningCheckin
- *  B) Checked in           → show ProteinProgressRing (hero) + DailyOverview +
- *                            tab bar (Meals | Nutrients | AI Coach)
+ *  B) Checked in           → DayHeader + live protein ring (checked meals only)
+ *                            + CompletionStats + ProteinVelocity
+ *                            + tab bar (Meals | Nutrients | AI Coach)
  */
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate }                  from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, Zap }      from 'lucide-react'
+import { motion, AnimatePresence }      from 'framer-motion'
+import { Settings, Zap }               from 'lucide-react'
 
-import { useProfileStore }   from '../stores/useProfileStore'
-import { useScheduleStore }  from '../stores/useScheduleStore'
-import { useMealPlanStore }  from '../stores/useMealPlanStore'
+import { useProfileStore }  from '../stores/useProfileStore'
+import { useScheduleStore } from '../stores/useScheduleStore'
+import { useMealPlanStore } from '../stores/useMealPlanStore'
 
-import MorningCheckin        from '../components/schedule/MorningCheckin'
-import ProteinProgressRing   from '../components/protein/ProteinProgressRing'
-import ProteinPerMealBar     from '../components/protein/ProteinPerMealBar'
-import DailyOverview         from '../components/nutrition/DailyOverview'
-import ScheduleSheet         from '../components/schedule/ScheduleSheet'
-import AiCoachCard           from '../components/ai/AiCoachCard'
+import MorningCheckin      from '../components/schedule/MorningCheckin'
+import ProteinProgressRing from '../components/protein/ProteinProgressRing'
+import ProteinPerMealBar   from '../components/protein/ProteinPerMealBar'
+import DailyOverview       from '../components/nutrition/DailyOverview'
+import ScheduleSheet       from '../components/schedule/ScheduleSheet'
+import AiCoachCard         from '../components/ai/AiCoachCard'
 
-// ── Tab definitions ─────────────────────────────────────────────────────────
+import DayHeader       from '../components/tracker/DayHeader'
+import CompletionStats from '../components/tracker/CompletionStats'
+import ProteinVelocity from '../components/tracker/ProteinVelocity'
+
+// ── Tab definitions ──────────────────────────────────────────────────────────
 const TABS = [
   { id: 'meals',     label: 'Meals'     },
   { id: 'nutrients', label: 'Nutrients' },
   { id: 'ai',        label: 'AI Coach'  },
 ]
 
+// ── Celebration confetti ─────────────────────────────────────────────────────
+const CONFETTI_COLORS = ['#8b5cf6','#10b981','#f59e0b','#3b82f6','#ec4899','#ef4444']
+
+function Celebration({ visible }) {
+  const particles = Array.from({ length: 14 }, (_, i) => ({
+    x: (Math.random() - 0.5) * 240,
+    y: -(40 + Math.random() * 120),
+    rotate: Math.random() * 720,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+  }))
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          key="celebration"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, delay: 2.5 }}
+          className="fixed inset-0 flex flex-col items-center justify-center z-50 pointer-events-none"
+        >
+          {particles.map((p, i) => (
+            <motion.span
+              key={i}
+              className="absolute w-2.5 h-2.5 rounded-sm"
+              style={{ backgroundColor: p.color, top: '50%', left: '50%' }}
+              initial={{ x: 0, y: 0, scale: 1, opacity: 1, rotate: 0 }}
+              animate={{ x: p.x, y: p.y, scale: 0, opacity: 0, rotate: p.rotate }}
+              transition={{ duration: 1.0, ease: 'easeOut', delay: i * 0.04 }}
+            />
+          ))}
+          <motion.p
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+            className="text-3xl font-black text-white text-center drop-shadow-lg"
+          >
+            🎉 Protein target hit!
+          </motion.p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 export default function Dashboard() {
-  const navigate = useNavigate()
+  const navigate    = useNavigate()
   const [activeTab, setActiveTab] = useState('meals')
+  const [showCelebration, setShowCelebration] = useState(false)
 
-  const { name, proteinTarget, goalCalories } = useProfileStore()
-  const { todayCheckedIn, todayActivity }     = useScheduleStore()
-  const { todayPlan, autoRegenAt }            = useMealPlanStore()
+  const { proteinTarget, goalCalories } = useProfileStore()
+  const { todayCheckedIn, todayActivity } = useScheduleStore()
+  const { todayPlan, autoRegenAt, checkedMeals, addedBoosters } = useMealPlanStore()
 
-  // ── Profile-change toast ───────────────────────────────────────────────────
+  // ── Profile-change toast ─────────────────────────────────────────────────
   const [showRegenToast, setShowRegenToast] = useState(false)
-  const seenRegenAt = useRef(autoRegenAt) // initialised to current so first render is silent
+  const seenRegenAt = useRef(autoRegenAt)
 
   useEffect(() => {
     if (autoRegenAt && autoRegenAt !== seenRegenAt.current) {
@@ -51,40 +103,43 @@ export default function Dashboard() {
     }
   }, [autoRegenAt])
 
-  // ── Greeting ──────────────────────────────────────────────────────────────
-  const hour     = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  // ── Gate: show check-in if not done yet ──────────────────────────────────
+  if (!todayCheckedIn) return <MorningCheckin />
 
-  // ── Gate: show check-in if not done yet ───────────────────────────────────
-  if (!todayCheckedIn) {
-    return <MorningCheckin />
+  // ── Derive totals ─────────────────────────────────────────────────────────
+  const plan   = todayPlan
+  const slots  = plan?.slots ?? []
+  const target = plan?.proteinTarget ?? proteinTarget ?? 80
+
+  // Live protein = only CHECKED meals + boosters
+  const checkedProtein  = Object.values(checkedMeals).reduce((s, v) => s + (v.protein ?? 0), 0)
+  const boosterProtein  = addedBoosters.reduce((s, b) => s + (b.protein ?? 0), 0)
+  const liveProtein     = checkedProtein + boosterProtein
+
+  function handleMealCheck(protein) {
+    const nextTotal = liveProtein + protein
+    if (nextTotal >= target && liveProtein < target) {
+      setShowCelebration(true)
+      setTimeout(() => setShowCelebration(false), 3200)
+    }
   }
-
-  // ── Derive totals from plan ───────────────────────────────────────────────
-  const plan         = todayPlan   // { slots, totalProtein, proteinTarget, hasWorkout, date }
-  const slots        = plan?.slots ?? []
-  const eaten        = plan?.totalProtein ?? 0
-  const target       = plan?.proteinTarget ?? proteinTarget ?? 80
 
   return (
     <div className="flex flex-col min-h-full">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-4 pt-5 pb-2">
-        <div>
-          <p className="text-xs text-gray-500 font-medium">{greeting}</p>
-          <h1 className="text-lg font-bold text-white leading-tight">
-            {name ? name : 'Your'} Dashboard
-          </h1>
-        </div>
+      <Celebration visible={showCelebration} />
+
+      {/* ── Day Header (date/time/greeting) ───────────────────────────────── */}
+      <div className="flex items-start justify-between pr-4">
+        <DayHeader />
         <button
           onClick={() => navigate('/settings')}
-          className="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-full border border-gray-700 hover:border-gray-600 transition-colors"
+          className="mt-5 w-9 h-9 flex items-center justify-center bg-gray-800 rounded-full border border-gray-700 hover:border-gray-600 transition-colors shrink-0"
         >
           <Settings size={16} className="text-gray-400" />
         </button>
-      </header>
+      </div>
 
-      {/* ── Profile-change toast ──────────────────────────────────────────── */}
+      {/* ── Profile-change toast ─────────────────────────────────────────── */}
       <AnimatePresence>
         {showRegenToast && (
           <motion.div
@@ -101,20 +156,29 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* ── Hero: Protein Progress Ring ────────────────────────────────────── */}
+      {/* ── Hero: Live Protein Progress Ring (checked meals only) ────────── */}
       <motion.section
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center py-6 px-4"
+        className="flex flex-col items-center py-5 px-4"
       >
         <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">
           🎯 Today's Protein
         </p>
-        <ProteinProgressRing eaten={eaten} target={target} size={220} />
+        <ProteinProgressRing eaten={liveProtein} target={target} size={200} />
       </motion.section>
 
-      {/* ── Daily Overview card ────────────────────────────────────────────── */}
+      {/* ── Completion stats ──────────────────────────────────────────────── */}
+      <div className="px-4 mb-3">
+        <CompletionStats
+          slots={slots}
+          proteinAccumulated={liveProtein}
+          proteinTarget={target}
+        />
+      </div>
+
+      {/* ── Daily Overview ────────────────────────────────────────────────── */}
       <div className="px-4">
         <DailyOverview
           plan={plan}
@@ -124,7 +188,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Tab bar ───────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 mx-4 mt-5 bg-gray-900 rounded-xl p-1 border border-gray-800">
+      <div className="flex gap-1 mx-4 mt-4 bg-gray-900 rounded-xl p-1 border border-gray-800">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -140,7 +204,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* ── Tab content ───────────────────────────────────────────────────── */}
+      {/* ── Tab content ──────────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
@@ -151,28 +215,24 @@ export default function Dashboard() {
           className="px-4 mt-4"
         >
           {activeTab === 'meals' && (
-            <MealsTab slots={slots} target={target} />
+            <MealsTab slots={slots} target={target} onCheck={handleMealCheck} />
           )}
-          {activeTab === 'nutrients' && (
-            <NutrientsTab plan={plan} />
-          )}
-          {activeTab === 'ai' && (
-            <AiTab />
-          )}
+          {activeTab === 'nutrients' && <NutrientsTab plan={plan} />}
+          {activeTab === 'ai'        && <AiTab />}
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Change plan button ─────────────────────────────────────────────── */}
-      <div className="px-4 mt-5 mb-2">
+      {/* ── Change plan button ────────────────────────────────────────────── */}
+      <div className="px-4 mt-4 mb-2">
         <ScheduleSheet />
       </div>
     </div>
   )
 }
 
-// ── Sub-panels ───────────────────────────────────────────────────────────────
+// ── Sub-panels ────────────────────────────────────────────────────────────────
 
-function MealsTab({ slots, target }) {
+function MealsTab({ slots, target, onCheck }) {
   if (!slots.length) {
     return (
       <div className="text-center py-8 text-gray-600">
@@ -183,6 +243,7 @@ function MealsTab({ slots, target }) {
 
   return (
     <div className="space-y-4 pb-4">
+      {/* Per-meal protein bars (quick overview) */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
           Per-Meal Protein
@@ -190,7 +251,10 @@ function MealsTab({ slots, target }) {
         <ProteinPerMealBar slots={slots} dailyTarget={target} />
       </div>
 
-      {/* Quick meal list */}
+      {/* Protein velocity */}
+      <ProteinVelocity slots={slots} proteinTarget={target} />
+
+      {/* Quick meal summary list */}
       <div className="space-y-2">
         {slots.map((slot) => (
           <div key={slot.type} className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
@@ -200,14 +264,11 @@ function MealsTab({ slots, target }) {
                 <span className="text-[10px] text-gray-600">· {slot.time}</span>
               </div>
               <p className="text-sm text-white font-medium truncate mt-0.5">
-                {slot.meal?.name ?? <span className="text-gray-600 italic">No meal found</span>}
+                {slot.meal?.name ?? <span className="text-gray-600 italic">No meal</span>}
               </p>
             </div>
             <div className="text-right shrink-0">
               <span className="text-sm font-bold text-violet-400">{slot.meal?.protein ?? 0}g</span>
-              {slot.fallback && (
-                <p className="text-[10px] text-amber-500">{slot.deltaLabel}</p>
-              )}
             </div>
           </div>
         ))}
