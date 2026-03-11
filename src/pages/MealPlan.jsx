@@ -88,19 +88,31 @@ export default function MealPlan() {
   function handleRegenerate() {
     try {
       setGenerating(true)
-      const scheduleType = PRESET_MAP[activePreset] || 'wfh'
-      const workoutType  = ACTIVITY_MAP[todayActivity] || 'rest'
-      const hasWorkout   = workoutType !== 'rest'
-      const profile      = { diet, canCook: effectiveCanCook, weight, height, age, gender, activityLevel, goal }
+      // Use getState() to guarantee we read the latest store values, not stale closure
+      const prof  = useProfileStore.getState()
+      const sched = useScheduleStore.getState()
+
+      const scheduleType  = PRESET_MAP[sched.activePreset] || 'wfh'
+      const workoutType   = ACTIVITY_MAP[sched.todayActivity] || 'rest'
+      const hasWorkout    = workoutType !== 'rest'
+      const cookable      = sched.todayCanCook ?? prof.canCook ?? true
+      const currentTarget = prof.proteinTarget ?? 80
+      const db            = MEAL_DB[prof.diet] || mealsVeg
+      const profileObj    = {
+        diet: prof.diet, canCook: cookable,
+        weight: prof.weight, height: prof.height,
+        age: prof.age, gender: prof.gender,
+        activityLevel: prof.activityLevel, goal: prof.goal,
+      }
 
       const newPlan = generateDayPlan(
-        profile,
+        profileObj,
         { scheduleType },
-        target,
-        hasWorkout ? todayWorkoutTime : null,
-        todayWorkoutDuration || 60,
+        currentTarget,
+        hasWorkout ? sched.todayWorkoutTime : null,
+        sched.todayWorkoutDuration || 60,
         workoutType,
-        mealDB
+        db
       )
       setTodayPlan(newPlan)
     } catch (err) {
