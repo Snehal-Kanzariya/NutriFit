@@ -117,7 +117,7 @@ export default function ScheduleSheet() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 bg-black/60 z-40"
+              className="fixed inset-0 bg-black/60 z-[55]"
             />
 
             <motion.div
@@ -126,7 +126,7 @@ export default function ScheduleSheet() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-gray-900 border-t border-gray-800 rounded-t-3xl z-50 pb-8 max-h-[90vh] overflow-y-auto"
+              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-gray-900 border-t border-gray-800 rounded-t-3xl z-[60] pb-28 max-h-[92vh] overflow-y-auto"
             >
               {/* Handle + header */}
               <div className="sticky top-0 bg-gray-900 pt-3 pb-3 px-4 border-b border-gray-800 z-10">
@@ -190,10 +190,13 @@ export default function ScheduleSheet() {
                     <p className="text-[11px] text-gray-600">Off = quick meals only</p>
                   </div>
                   <button
+                    type="button"
+                    role="switch"
+                    aria-checked={cookToggle}
                     onClick={() => setCookToggle(!cookToggle)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${cookToggle ? 'bg-emerald-500' : 'bg-gray-600'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${cookToggle ? 'bg-violet-500' : 'bg-gray-700'}`}
                   >
-                    <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${cookToggle ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${cookToggle ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </button>
                 </div>
 

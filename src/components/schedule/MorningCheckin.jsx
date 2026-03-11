@@ -177,16 +177,13 @@ export default function MorningCheckin() {
             <p className="text-[11px] text-gray-600">Off = quick & no-cook meals only</p>
           </div>
           <button
+            type="button"
+            role="switch"
+            aria-checked={cookToggle}
             onClick={() => setCookToggle(!cookToggle)}
-            className={`relative w-12 h-6 rounded-full transition-colors ${
-              cookToggle ? 'bg-emerald-500' : 'bg-gray-700'
-            }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${cookToggle ? 'bg-violet-500' : 'bg-gray-700'}`}
           >
-            <span
-              className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                cookToggle ? 'translate-x-6' : 'translate-x-0.5'
-              }`}
-            />
+            <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${cookToggle ? 'translate-x-5' : 'translate-x-0.5'}`} />
           </button>
         </div>
       </div>

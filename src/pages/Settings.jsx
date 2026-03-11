@@ -52,10 +52,13 @@ function Row({ label, sublabel, right, onClick, destructive = false }) {
 function Toggle({ value, onChange }) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={value}
       onClick={() => onChange(!value)}
-      className={`relative w-11 h-6 rounded-full transition-colors ${value ? 'bg-violet-600' : 'bg-gray-600'}`}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${value ? 'bg-violet-500' : 'bg-gray-700'}`}
     >
-      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0.5'}`} />
+      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${value ? 'translate-x-5' : 'translate-x-0.5'}`} />
     </button>
   )
 }
