@@ -26,12 +26,18 @@ export const useMealPlanStore = create(
       isGenerating: false,
 
       // Timestamp set whenever the plan was auto-regenerated from a Profile save.
-      // Dashboard watches this to show a "Plan updated" toast.
       autoRegenAt: null,
+
+      // ── Meal tracker state ───────────────────────────────────────────────
+      // checkedMeals: { [slotType]: { checkedAt: timestamp, protein: number } }
+      checkedMeals: {},
+      // trackerSkipped: { [slotType]: true } — user chose not to eat this meal
+      trackerSkipped: {},
 
       // ── Plan lifecycle ───────────────────────────────────────────────────
       setTodayPlan: (plan) =>
-        set({ todayPlan: plan, skippedTypes: [], skipHistory: [], addedBoosters: [] }),
+        set({ todayPlan: plan, skippedTypes: [], skipHistory: [], addedBoosters: [],
+              checkedMeals: {}, trackerSkipped: {} }),
 
       // Called after mealEngine.applySkip() resolves
       applySkipResult: (updatedPlan, skippedType, skippedLabel, proteinWas, boosts) =>
@@ -73,8 +79,30 @@ export const useMealPlanStore = create(
 
       setAutoRegenAt: (ts) => set({ autoRegenAt: ts }),
 
+      // ── Tracker actions ──────────────────────────────────────────────────
+      checkMeal: (slotType, protein) =>
+        set((s) => ({
+          checkedMeals: { ...s.checkedMeals, [slotType]: { checkedAt: Date.now(), protein } },
+        })),
+
+      uncheckMeal: (slotType) =>
+        set((s) => {
+          const { [slotType]: _, ...rest } = s.checkedMeals
+          return { checkedMeals: rest }
+        }),
+
+      trackerSkipMeal: (slotType) =>
+        set((s) => ({ trackerSkipped: { ...s.trackerSkipped, [slotType]: true } })),
+
+      restoreTrackerMeal: (slotType) =>
+        set((s) => {
+          const { [slotType]: _, ...rest } = s.trackerSkipped
+          return { trackerSkipped: rest }
+        }),
+
       clearPlan: () =>
-        set({ todayPlan: null, skippedTypes: [], skipHistory: [], addedBoosters: [], isGenerating: false }),
+        set({ todayPlan: null, skippedTypes: [], skipHistory: [], addedBoosters: [],
+              isGenerating: false, checkedMeals: {}, trackerSkipped: {} }),
     }),
     { name: 'nutrifit-mealplan' }
   )
