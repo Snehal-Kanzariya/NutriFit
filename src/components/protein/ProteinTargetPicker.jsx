@@ -83,7 +83,7 @@ export default function ProteinTargetPicker({ value, onChange, recommended }) {
       )}
 
       {/* Slider */}
-      <div className="relative px-1">
+      <div className="relative px-3">
         <style>{`
           .protein-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -125,7 +125,7 @@ export default function ProteinTargetPicker({ value, onChange, recommended }) {
           onChange={handleSlider}
           className="protein-slider w-full appearance-none bg-transparent cursor-pointer focus:outline-none"
         />
-        <div className="flex justify-between text-[11px] text-gray-600 mt-1 px-0.5">
+        <div className="flex justify-between text-[11px] text-gray-600 mt-1">
           <span>30g</span>
           <span>200g</span>
         </div>

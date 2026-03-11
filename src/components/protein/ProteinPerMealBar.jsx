@@ -53,11 +53,18 @@ export default function ProteinPerMealBar({ slots = [], dailyTarget = 1 }) {
                   skipped
                 </span>
               )}
+              {!skipped && protein === 0 && (
+                <span className="absolute inset-0 flex items-center px-2 text-[10px] text-gray-600">
+                  no meal
+                </span>
+              )}
             </div>
 
             {/* Protein value + % */}
             <div className="text-right shrink-0 w-16">
-              <span className="text-sm font-bold text-white">{protein}g</span>
+              <span className={`text-sm font-bold ${protein === 0 && !skipped ? 'text-gray-600' : 'text-white'}`}>
+                {protein}g
+              </span>
               {pct > 0 && (
                 <span className="text-[10px] text-gray-500 ml-1">{pct}%</span>
               )}
