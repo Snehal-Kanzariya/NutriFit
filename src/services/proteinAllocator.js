@@ -34,6 +34,22 @@ const REST_DAY_WEIGHTS = {
 /** ±15% tolerance window for "close enough" matching (SPEC.md) */
 const MATCH_TOLERANCE = 0.15;
 
+/**
+ * Maximum per-meal protein achievable from the recipe database.
+ * Prevents absurd slot targets (e.g. 60g) that no single meal can hit.
+ */
+export const SLOT_PROTEIN_CAPS = {
+  breakfast:      30,
+  lunch:          45,
+  dinner:         38,
+  snack:          20,
+  'pre-workout':  15,
+  'post-workout': 35,
+};
+
+/** Sum of all slot caps — the max protein achievable from food alone */
+const MAX_FOOD_PROTEIN = Object.values(SLOT_PROTEIN_CAPS).reduce((s, v) => s + v, 0);
+
 /** Inner ±5% window for "exact" match */
 const EXACT_TOLERANCE = 0.05;
 
@@ -98,24 +114,33 @@ export function distributeProtein(targetProtein, mealSlots, hasWorkout) {
     }
   }
 
-  // Round and ensure we exactly hit the target (last slot absorbs rounding drift)
+  // Round, then cap each slot to what the meal DB can actually provide
   const rounded = {};
-  let roundedSum = 0;
   const slotKeys = Object.keys(distribution);
 
-  for (let i = 0; i < slotKeys.length - 1; i++) {
-    const g = Math.round(distribution[slotKeys[i]]);
-    rounded[slotKeys[i]] = g;
-    roundedSum += g;
-  }
-
-  // Last slot gets the exact remainder so total === targetProtein
-  if (slotKeys.length > 0) {
-    const last = slotKeys[slotKeys.length - 1];
-    rounded[last] = Math.max(0, targetProtein - roundedSum);
+  for (const key of slotKeys) {
+    const raw = Math.round(distribution[key]);
+    const cap = SLOT_PROTEIN_CAPS[key] ?? 35;
+    rounded[key] = Math.min(raw, cap);
   }
 
   return rounded;
+}
+
+/**
+ * Returns how much protein is achievable from food alone given a set of active slots.
+ * If target > achievable, the UI should suggest supplements.
+ *
+ * @param {number}   targetProtein
+ * @param {string[]} mealSlots
+ * @returns {{ achievable: number, needsSupplement: boolean, shortfall: number }}
+ */
+export function getAchievableProtein(targetProtein, mealSlots) {
+  const achievable = mealSlots.reduce((sum, slot) => {
+    return sum + (SLOT_PROTEIN_CAPS[slot] ?? 35);
+  }, 0);
+  const needsSupplement = targetProtein > achievable;
+  return { achievable, needsSupplement, shortfall: Math.max(0, targetProtein - achievable) };
 }
 
 /**

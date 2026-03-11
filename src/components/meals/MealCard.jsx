@@ -21,10 +21,11 @@ const SLOT_STYLE = {
 
 // ── Protein match badge ───────────────────────────────────────────────────────
 const MATCH_BADGE = {
-  exact: { icon: '✅', label: 'Exact match',   cls: 'text-emerald-400 bg-emerald-950/60 border-emerald-800' },
-  close: { icon: '≈',  label: 'Close',          cls: 'text-violet-400  bg-violet-950/60  border-violet-800'  },
-  over:  { icon: '⚠️', label: 'Over target',   cls: 'text-amber-400   bg-amber-950/60   border-amber-800'   },
-  under: { icon: '⚠️', label: 'Under target',  cls: 'text-red-400     bg-red-950/60     border-red-800'     },
+  exact:          { icon: '✅', label: 'Exact match',    cls: 'text-emerald-400 bg-emerald-950/60 border-emerald-800' },
+  close:          { icon: '≈',  label: 'Close',           cls: 'text-violet-400  bg-violet-950/60  border-violet-800'  },
+  over:           { icon: '⚠️', label: 'Over target',    cls: 'text-amber-400   bg-amber-950/60   border-amber-800'   },
+  under:          { icon: '⚠️', label: 'Under target',   cls: 'text-red-400     bg-red-950/60     border-red-800'     },
+  'best-available': { icon: '⭐', label: 'Best available', cls: 'text-blue-400    bg-blue-950/60    border-blue-800'    },
 }
 
 // ── Glow nutrient labels ──────────────────────────────────────────────────────
@@ -56,8 +57,10 @@ export default function MealCard({ slot, dailyTarget = 80, diet, canCook, onSkip
   if (!slot) return null
   const { type, time, label, proteinTarget, meal, proteinMatch, deltaLabel, fallback } = slot
 
-  const style    = SLOT_STYLE[type]   ?? SLOT_STYLE.snack
-  const badge    = MATCH_BADGE[proteinMatch] ?? MATCH_BADGE.close
+  const style    = SLOT_STYLE[type] ?? SLOT_STYLE.snack
+  // When fallback is true the engine picked best-available (target exceeded DB capacity) — show calm blue badge
+  const effectiveMatch = fallback ? 'best-available' : proteinMatch
+  const badge    = MATCH_BADGE[effectiveMatch] ?? MATCH_BADGE.close
   const isQuick  = meal?.tags?.includes('quick')
   const protein  = meal?.protein ?? 0
 
@@ -102,11 +105,6 @@ export default function MealCard({ slot, dailyTarget = 80, diet, canCook, onSkip
             <span className={`w-2 h-2 rounded-full shrink-0 ${style.dot}`} />
             <span className={`text-xs font-bold uppercase tracking-wider ${style.label}`}>{label}</span>
             <span className="text-gray-600 text-xs">· {time}</span>
-            {fallback && (
-              <span className="ml-auto text-[10px] text-amber-500 font-medium">
-                {deltaLabel} fallback
-              </span>
-            )}
           </div>
 
           {/* ── Row 2: Meal name ───────────────────────────────────────────── */}
@@ -136,7 +134,7 @@ export default function MealCard({ slot, dailyTarget = 80, diet, canCook, onSkip
             <div className="flex items-center gap-2">
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.cls}`}>
                 {badge.icon} {badge.label}
-                {proteinMatch !== 'exact' && deltaLabel !== 'exact' && ` (${deltaLabel})`}
+                {!fallback && effectiveMatch !== 'exact' && deltaLabel !== 'exact' && ` (${deltaLabel})`}
               </span>
               <span className="text-[10px] text-gray-600">target: {proteinTarget}g</span>
             </div>
