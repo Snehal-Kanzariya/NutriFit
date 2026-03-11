@@ -14,6 +14,7 @@ import { useMealPlanStore }   from '../stores/useMealPlanStore'
 import MealCard              from '../components/meals/MealCard'
 import SkippedMealBanner     from '../components/meals/SkippedMealBanner'
 import ProteinBooster        from '../components/protein/ProteinBooster'
+import { MealCardSkeleton }  from '../components/ui/SkeletonCard'
 
 import { applySkip, generateDayPlan } from '../services/mealEngine'
 
@@ -101,6 +102,17 @@ export default function MealPlan() {
     )
     setTodayPlan(newPlan)
     setGenerating(false)
+  }
+
+  // ── Generating skeleton ───────────────────────────────────────────────────
+  const { isGenerating } = useMealPlanStore()
+  if (isGenerating) {
+    return (
+      <div className="px-4 pt-5 pb-8 space-y-3">
+        <div className="h-6 w-40 bg-gray-800 rounded-full animate-pulse mb-4" />
+        {[1, 2, 3, 4].map((i) => <MealCardSkeleton key={i} />)}
+      </div>
+    )
   }
 
   // ── Empty state ───────────────────────────────────────────────────────────

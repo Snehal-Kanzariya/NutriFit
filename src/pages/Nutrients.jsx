@@ -175,10 +175,10 @@ export default function Nutrients() {
   if (!todayPlan) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-3">
-        <span className="text-5xl">📊</span>
-        <h2 className="text-white font-bold text-xl">No data yet</h2>
+        <span className="text-5xl">🎯</span>
+        <h2 className="text-white font-bold text-xl">Set your protein target to get started!</h2>
         <p className="text-gray-500 text-sm">
-          Complete your morning check-in to see today's nutrition breakdown.
+          Complete your morning check-in to generate your meal plan and see your full nutrition breakdown.
         </p>
       </div>
     )
