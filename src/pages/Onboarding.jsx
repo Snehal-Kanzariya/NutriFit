@@ -499,16 +499,12 @@ function StepSchedule({ data, onChange }) {
         </div>
         <button
           type="button"
+          role="switch"
+          aria-checked={data.canCook}
           onClick={() => onChange('canCook', !data.canCook)}
-          className={`relative w-12 h-6 rounded-full transition-colors ${
-            data.canCook ? 'bg-violet-600' : 'bg-gray-700'
-          }`}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${data.canCook ? 'bg-violet-500' : 'bg-gray-700'}`}
         >
-          <span
-            className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow ${
-              data.canCook ? 'left-7' : 'left-1'
-            }`}
-          />
+          <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${data.canCook ? 'translate-x-5' : 'translate-x-0.5'}`} />
         </button>
       </div>
 
