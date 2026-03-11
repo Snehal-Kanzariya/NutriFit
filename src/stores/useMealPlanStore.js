@@ -25,6 +25,10 @@ export const useMealPlanStore = create(
       // Loading flag
       isGenerating: false,
 
+      // Timestamp set whenever the plan was auto-regenerated from a Profile save.
+      // Dashboard watches this to show a "Plan updated" toast.
+      autoRegenAt: null,
+
       // ── Plan lifecycle ───────────────────────────────────────────────────
       setTodayPlan: (plan) =>
         set({ todayPlan: plan, skippedTypes: [], skipHistory: [], addedBoosters: [] }),
@@ -66,6 +70,8 @@ export const useMealPlanStore = create(
 
       // ── Misc ─────────────────────────────────────────────────────────────
       setGenerating: (val) => set({ isGenerating: val }),
+
+      setAutoRegenAt: (ts) => set({ autoRegenAt: ts }),
 
       clearPlan: () =>
         set({ todayPlan: null, skippedTypes: [], skipHistory: [], addedBoosters: [], isGenerating: false }),

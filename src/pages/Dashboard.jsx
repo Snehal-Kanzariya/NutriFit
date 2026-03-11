@@ -7,8 +7,8 @@
  *  B) Checked in           → show ProteinProgressRing (hero) + DailyOverview +
  *                            tab bar (Meals | Nutrients | AI Coach)
  */
-import { useState }            from 'react'
-import { useNavigate }         from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate }                  from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings, Zap }      from 'lucide-react'
 
@@ -36,7 +36,20 @@ export default function Dashboard() {
 
   const { name, proteinTarget, goalCalories } = useProfileStore()
   const { todayCheckedIn, todayActivity }     = useScheduleStore()
-  const { todayPlan }                         = useMealPlanStore()
+  const { todayPlan, autoRegenAt }            = useMealPlanStore()
+
+  // ── Profile-change toast ───────────────────────────────────────────────────
+  const [showRegenToast, setShowRegenToast] = useState(false)
+  const seenRegenAt = useRef(autoRegenAt) // initialised to current so first render is silent
+
+  useEffect(() => {
+    if (autoRegenAt && autoRegenAt !== seenRegenAt.current) {
+      seenRegenAt.current = autoRegenAt
+      setShowRegenToast(true)
+      const t = setTimeout(() => setShowRegenToast(false), 3000)
+      return () => clearTimeout(t)
+    }
+  }, [autoRegenAt])
 
   // ── Greeting ──────────────────────────────────────────────────────────────
   const hour     = new Date().getHours()
@@ -70,6 +83,23 @@ export default function Dashboard() {
           <Settings size={16} className="text-gray-400" />
         </button>
       </header>
+
+      {/* ── Profile-change toast ──────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showRegenToast && (
+          <motion.div
+            key="regen-toast"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+            className="mx-4 mb-1 flex items-center gap-2 bg-emerald-900/60 border border-emerald-700/60 rounded-xl px-4 py-2.5"
+          >
+            <span className="text-base">✅</span>
+            <p className="text-emerald-300 text-xs font-semibold">Plan updated with your new settings</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Hero: Protein Progress Ring ────────────────────────────────────── */}
       <motion.section

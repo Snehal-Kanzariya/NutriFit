@@ -9,9 +9,29 @@ import { User, ChevronRight, Plus, Trash2, Edit2, CheckCircle } from 'lucide-rea
 
 import { useProfileStore }  from '../stores/useProfileStore'
 import { useScheduleStore } from '../stores/useScheduleStore'
+import { useMealPlanStore } from '../stores/useMealPlanStore'
 import ProteinTargetPicker  from '../components/protein/ProteinTargetPicker'
 import ScheduleSheet        from '../components/schedule/ScheduleSheet'
 import { saveProfile }      from '../services/storage'
+import { generateDayPlan }  from '../services/mealEngine'
+
+import mealsNonveg     from '../data/meals-nonveg.json'
+import mealsVeg        from '../data/meals-veg.json'
+import mealsVegan      from '../data/meals-vegan.json'
+import mealsEggetarian from '../data/meals-eggetarian.json'
+
+const MEAL_DB = {
+  nonveg: mealsNonveg, veg: mealsVeg, vegan: mealsVegan, eggetarian: mealsEggetarian,
+}
+
+const PRESET_MAP = {
+  student: 'student', office: 'office', wfh: 'wfh',
+  early_bird: 'early-bird', night_shift: 'night-shift',
+}
+
+const ACTIVITY_MAP = {
+  gym: 'weights', yoga: 'yoga', running: 'cardio', sports: 'sports', home: 'home', rest: 'rest',
+}
 
 // ── Option maps ───────────────────────────────────────────────────────────────
 
@@ -258,6 +278,7 @@ function RoutineManager({ routines, onAdd, onEdit, onDelete }) {
 export default function Profile() {
   const profile = useProfileStore()
   const { routines, addRoutine } = useScheduleStore()
+  const { todayPlan, setTodayPlan, setAutoRegenAt } = useMealPlanStore()
 
   // Local form state — mirrors the profile
   const [name,          setName]          = useState(profile.name          ?? '')
@@ -303,6 +324,33 @@ export default function Profile() {
 
     // Persist to Dexie
     await saveProfile({ ...profile, ...updates })
+
+    // ── Auto-regenerate meal plan with new profile settings ──────────────────
+    // Only regenerate if the user has already checked in and has an active plan.
+    if (todayPlan?.slots?.length) {
+      try {
+        const sched        = useScheduleStore.getState()
+        const scheduleType = PRESET_MAP[sched.activePreset] || 'wfh'
+        const workoutType  = ACTIVITY_MAP[sched.todayActivity] || 'rest'
+        const hasWorkout   = workoutType !== 'rest'
+        const cookable     = sched.todayCanCook ?? updates.canCook ?? true
+        const db           = MEAL_DB[updates.diet] || mealsVeg
+
+        const newPlan = generateDayPlan(
+          { ...updates, canCook: cookable },
+          { scheduleType },
+          updates.proteinTarget,
+          hasWorkout ? sched.todayWorkoutTime : null,
+          sched.todayWorkoutDuration || 60,
+          workoutType,
+          db
+        )
+        setTodayPlan(newPlan)
+        setAutoRegenAt(Date.now())
+      } catch (err) {
+        console.error('[Profile] plan regen failed:', err)
+      }
+    }
 
     setSaving(false)
     setSaved(true)
