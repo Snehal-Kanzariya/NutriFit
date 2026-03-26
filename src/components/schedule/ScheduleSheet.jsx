@@ -1,10 +1,10 @@
 /**
  * ScheduleSheet.jsx
- * Bottom sheet for changing today's plan mid-day.
+ * Bottom sheet (mobile) / centered modal (desktop) for changing today's plan.
  * Exposes: activity, workout time, cook toggle, protein target.
  * On confirm → re-runs generateDayPlan() and replaces todayPlan.
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Calendar, X, ChevronRight, Clock } from 'lucide-react'
 import ProteinTargetPicker from '../protein/ProteinTargetPicker'
@@ -55,8 +55,22 @@ export default function ScheduleSheet() {
   const isRest      = activity === 'rest'
   const selectedAct = ACTIVITIES.find((a) => a.id === activity) ?? ACTIVITIES[0]
 
+  // Lock body scroll when sheet is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [open])
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleEsc = (e) => { if (e.key === 'Escape') setOpen(false) }
+    if (open) window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [open])
+
   function handleOpen() {
-    // Reset local state to current values
     setProtein(proteinTarget)
     setActivity(todayActivity || 'gym')
     setWoTime(todayWorkoutTime || '07:00')
@@ -107,115 +121,135 @@ export default function ScheduleSheet() {
         <ChevronRight size={14} className="text-gray-600" />
       </button>
 
-      {/* Backdrop + Sheet */}
+      {/* Overlay + Sheet */}
       <AnimatePresence>
         {open && (
           <>
+            {/* Backdrop overlay — covers entire screen */}
             <motion.div
               key="backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 bg-black/60 z-[55]"
+              className="fixed inset-0 bg-black/70 z-50"
             />
 
+            {/* Modal box — positioned container */}
             <motion.div
               key="sheet"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-gray-900 border-t border-gray-800 rounded-t-3xl z-[60] pb-28 max-h-[92vh] overflow-y-auto"
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed z-50 inset-x-0 bottom-0
+                md:inset-x-auto md:bottom-[5%] md:left-1/2 md:-translate-x-1/2
+                md:w-full md:max-w-lg"
             >
-              {/* Handle + header */}
-              <div className="sticky top-0 bg-gray-900 pt-3 pb-3 px-4 border-b border-gray-800 z-10">
-                <div className="w-10 h-1 bg-gray-700 rounded-full mx-auto mb-3" />
-                <div className="flex items-center justify-between">
-                  <h3 className="text-white font-bold text-base">Change Today's Plan</h3>
-                  <button onClick={() => setOpen(false)} className="text-gray-500 hover:text-gray-300">
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
+              <div className="bg-gray-900 rounded-t-2xl md:rounded-2xl shadow-2xl max-h-[85vh] flex flex-col">
 
-              <div className="p-4 space-y-5">
-                {/* Protein target */}
-                <div className="bg-gray-800/50 rounded-2xl p-4">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Protein Target</h4>
-                  <ProteinTargetPicker value={protein} onChange={setProtein} recommended={recommendedProtein} />
+                {/* Drag handle — mobile only */}
+                <div className="flex justify-center pt-3 md:hidden">
+                  <div className="w-12 h-1.5 bg-gray-600 rounded-full" />
                 </div>
 
-                {/* Activity */}
-                <div>
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Activity</h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    {ACTIVITIES.map((a) => (
-                      <button
-                        key={a.id}
-                        onClick={() => setActivity(a.id)}
-                        className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all text-sm ${
-                          activity === a.id
-                            ? 'bg-violet-600/20 border-violet-500 text-white'
-                            : 'bg-gray-800 border-gray-700 text-gray-400'
-                        }`}
-                      >
-                        <span className="text-xl">{a.emoji}</span>
-                        <span className="text-[11px] font-semibold">{a.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Workout time */}
-                {!isRest && (
-                  <div className="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Clock size={15} className="text-gray-400" />
-                      <span className="text-sm text-gray-300">Workout Time</span>
-                    </div>
-                    <input
-                      type="time"
-                      value={woTime}
-                      onChange={(e) => setWoTime(e.target.value)}
-                      className="bg-gray-700 text-white text-sm px-3 py-1.5 rounded-lg border border-gray-600 focus:outline-none focus:border-violet-500"
-                    />
-                  </div>
-                )}
-
-                {/* Cook toggle */}
-                <div className="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3">
-                  <div>
-                    <p className="text-sm text-gray-300 font-medium">Can Cook Today?</p>
-                    <p className="text-[11px] text-gray-600">Off = quick meals only</p>
-                  </div>
+                {/* Fixed header with close button */}
+                <div className="flex justify-between items-center px-5 pt-4 pb-2">
+                  <h2 className="text-lg font-bold text-white">Change Today's Plan</h2>
                   <button
-                    type="button"
-                    role="switch"
-                    aria-checked={cookToggle}
-                    onClick={() => setCookToggle(!cookToggle)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${cookToggle ? 'bg-violet-500' : 'bg-gray-700'}`}
+                    onClick={() => setOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
                   >
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${cookToggle ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    <X size={18} />
                   </button>
                 </div>
 
-                {/* Confirm */}
-                <button
-                  onClick={handleConfirm}
-                  disabled={saving}
-                  className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base transition-all ${
-                    saving
-                      ? 'bg-violet-800 text-violet-300 cursor-wait'
-                      : 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-500/25'
-                  }`}
-                >
-                  {saving ? (
-                    <><span className="animate-spin w-4 h-4 border-2 border-violet-300 border-t-transparent rounded-full" /> Rebuilding plan…</>
-                  ) : (
-                    <>Rebuild My Plan <ChevronRight size={18} /></>
+                {/* SCROLLABLE content area */}
+                <div className="overflow-y-auto flex-1 px-5 pb-6 max-h-[80vh]">
+
+                  {/* Protein target */}
+                  <div className="mb-6">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Protein Target</p>
+                    <ProteinTargetPicker value={protein} onChange={setProtein} recommended={recommendedProtein} />
+                  </div>
+
+                  {/* Activity — 3x2 grid */}
+                  <div className="mb-6">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Activity</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {ACTIVITIES.map((a) => (
+                        <button
+                          key={a.id}
+                          onClick={() => setActivity(a.id)}
+                          className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all text-sm ${
+                            activity === a.id
+                              ? 'bg-violet-600/20 border-violet-500 text-white'
+                              : 'bg-gray-800 border-gray-700 text-gray-400'
+                          }`}
+                        >
+                          <span className="text-xl">{a.emoji}</span>
+                          <span className="text-[11px] font-semibold">{a.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Workout time */}
+                  {!isRest && (
+                    <div className="flex justify-between items-center mb-4 bg-gray-800/50 rounded-xl px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Clock size={15} className="text-gray-400" />
+                        <span className="text-sm text-gray-300">Workout Time</span>
+                      </div>
+                      <input
+                        type="time"
+                        value={woTime}
+                        onChange={(e) => setWoTime(e.target.value)}
+                        className="bg-gray-800 text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-violet-500"
+                      />
+                    </div>
                   )}
-                </button>
+
+                  {/* Cook toggle */}
+                  <div className="flex justify-between items-center mb-6 bg-gray-800/50 rounded-xl px-4 py-3">
+                    <div>
+                      <span className="text-sm text-gray-300">Can Cook Today?</span>
+                      <p className="text-xs text-gray-500">Off = quick meals only</p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={cookToggle}
+                      onClick={() => setCookToggle(!cookToggle)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${cookToggle ? 'bg-violet-500' : 'bg-gray-700'}`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-200 ease-in-out ${cookToggle ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+
+                  {/* Rebuild button — full width, always reachable by scrolling */}
+                  <button
+                    onClick={handleConfirm}
+                    disabled={saving}
+                    className={`w-full py-3.5 font-bold rounded-xl text-base transition-all ${
+                      saving
+                        ? 'bg-violet-800 text-violet-300 cursor-wait'
+                        : 'bg-violet-500 hover:bg-violet-400 text-white'
+                    }`}
+                  >
+                    {saving ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin w-4 h-4 border-2 border-violet-300 border-t-transparent rounded-full" />
+                        Rebuilding plan…
+                      </span>
+                    ) : (
+                      'Rebuild My Plan →'
+                    )}
+                  </button>
+
+                  {/* Extra bottom padding for mobile safe area */}
+                  <div className="h-6" />
+                </div>
               </div>
             </motion.div>
           </>

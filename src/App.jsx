@@ -72,87 +72,91 @@ function AppShell() {
   const location    = useLocation()
   const isOnboarded = useProfileStore((s) => s.isOnboarded)
 
+  const showNav = isOnboarded && location.pathname !== '/onboarding'
+
   return (
-    <div className="flex justify-center min-h-screen bg-gray-950">
-      <div className="relative w-full max-w-[480px] min-h-screen bg-gray-950 flex flex-col">
-        <PlanPersistence />
-        <OfflineBadge />
+    <div className="min-h-screen bg-gray-950">
+      <PlanPersistence />
+      <OfflineBadge />
 
-        <main className="flex-1 pb-20 overflow-x-hidden">
-          <AnimatePresence mode="wait" initial={false}>
-            <Routes location={location} key={location.pathname}>
-              {/* Onboarding — no shell chrome */}
-              <Route
-                path="/onboarding"
-                element={
-                  <AnimatedPage><Onboarding /></AnimatedPage>
-                }
-              />
+      <div className={`flex min-h-screen ${showNav ? 'lg:pl-56' : ''}`}>
+        {/* Sidebar nav — lg and up */}
+        {showNav && <BottomNav />}
 
-              {/* Protected routes — with BottomNav */}
-              <Route
-                path="/"
-                element={
-                  isOnboarded
-                    ? <AnimatedPage><Dashboard /></AnimatedPage>
-                    : <Navigate to="/onboarding" replace />
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  isOnboarded
-                    ? <AnimatedPage><Dashboard /></AnimatedPage>
-                    : <Navigate to="/onboarding" replace />
-                }
-              />
-              <Route
-                path="/meals"
-                element={
-                  isOnboarded
-                    ? <AnimatedPage><MealPlan /></AnimatedPage>
-                    : <Navigate to="/onboarding" replace />
-                }
-              />
-              <Route
-                path="/nutrients"
-                element={
-                  isOnboarded
-                    ? <AnimatedPage><Nutrients /></AnimatedPage>
-                    : <Navigate to="/onboarding" replace />
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  isOnboarded
-                    ? <AnimatedPage><Profile /></AnimatedPage>
-                    : <Navigate to="/onboarding" replace />
-                }
-              />
-              <Route
-                path="/history"
-                element={
-                  isOnboarded
-                    ? <AnimatedPage><History /></AnimatedPage>
-                    : <Navigate to="/onboarding" replace />
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  isOnboarded
-                    ? <AnimatedPage><Settings /></AnimatedPage>
-                    : <Navigate to="/onboarding" replace />
-                }
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AnimatePresence>
+        <main className="flex-1 pb-20 lg:pb-0 overflow-x-hidden w-full">
+          <div className="max-w-5xl mx-auto">
+            <AnimatePresence mode="wait" initial={false}>
+              <Routes location={location} key={location.pathname}>
+                {/* Onboarding — no shell chrome */}
+                <Route
+                  path="/onboarding"
+                  element={
+                    <AnimatedPage><Onboarding /></AnimatedPage>
+                  }
+                />
+
+                {/* Protected routes — with BottomNav */}
+                <Route
+                  path="/"
+                  element={
+                    isOnboarded
+                      ? <AnimatedPage><Dashboard /></AnimatedPage>
+                      : <Navigate to="/onboarding" replace />
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    isOnboarded
+                      ? <AnimatedPage><Dashboard /></AnimatedPage>
+                      : <Navigate to="/onboarding" replace />
+                  }
+                />
+                <Route
+                  path="/meals"
+                  element={
+                    isOnboarded
+                      ? <AnimatedPage><MealPlan /></AnimatedPage>
+                      : <Navigate to="/onboarding" replace />
+                  }
+                />
+                <Route
+                  path="/nutrients"
+                  element={
+                    isOnboarded
+                      ? <AnimatedPage><Nutrients /></AnimatedPage>
+                      : <Navigate to="/onboarding" replace />
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    isOnboarded
+                      ? <AnimatedPage><Profile /></AnimatedPage>
+                      : <Navigate to="/onboarding" replace />
+                  }
+                />
+                <Route
+                  path="/history"
+                  element={
+                    isOnboarded
+                      ? <AnimatedPage><History /></AnimatedPage>
+                      : <Navigate to="/onboarding" replace />
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    isOnboarded
+                      ? <AnimatedPage><Settings /></AnimatedPage>
+                      : <Navigate to="/onboarding" replace />
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </AnimatePresence>
+          </div>
         </main>
-
-        {/* BottomNav only on protected routes */}
-        {isOnboarded && location.pathname !== '/onboarding' && <BottomNav />}
       </div>
     </div>
   )

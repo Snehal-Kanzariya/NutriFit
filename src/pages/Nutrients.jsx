@@ -187,130 +187,87 @@ export default function Nutrients() {
   return (
     <div className="flex flex-col min-h-full">
       {/* ── Page header ─────────────────────────────────────────────────────── */}
-      <header className="px-4 pt-5 pb-3">
+      <header className="px-4 md:px-6 pt-5 pb-3">
         <h1 className="text-lg font-bold text-white">Nutrition</h1>
         <p className="text-xs text-gray-500 mt-0.5">Today's full breakdown</p>
       </header>
 
-      <div className="px-4 pb-8 space-y-6">
+      <div className="px-4 md:px-6 pb-8 space-y-6">
 
         {/* ════════════════════════════════════════════════════════════════════
             SECTION 1 — PROTEIN (hero)
         ════════════════════════════════════════════════════════════════════ */}
         <Section title="Protein" accent="text-violet-400">
 
-          {/* Big ring */}
-          <div className="flex flex-col items-center pt-2 pb-4">
-            <ProteinProgressRing eaten={eaten} target={target} size={200} />
-          </div>
-
-          {/* Eaten | Remaining | Target stats row */}
-          <div className="grid grid-cols-3 gap-2">
-            <StatPill label="Eaten"     value={`${eaten}g`}                 color="text-violet-400" bg="bg-violet-950/40" border="border-violet-800/50" />
-            <StatPill label="Remaining" value={`${Math.max(0, target - eaten)}g`} color="text-gray-300"   bg="bg-gray-800/60"    border="border-gray-700"      />
-            <StatPill label="Target"    value={`${target}g`}                color="text-emerald-400" bg="bg-emerald-950/40" border="border-emerald-800/50" />
-          </div>
-
-          {/* Per-meal bars */}
-          {slots.length > 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">
-                Per-Meal Breakdown
-              </p>
-              <ProteinPerMealBar slots={slots} dailyTarget={target} />
+          {/* Ring + stats — side by side on md+ */}
+          <div className="md:grid md:grid-cols-2 md:gap-6 md:items-center">
+            {/* Big ring */}
+            <div className="flex flex-col items-center pt-2 pb-4">
+              <ProteinProgressRing eaten={eaten} target={target} size={200} />
             </div>
-          )}
 
-          {/* Protein sources */}
-          {proteinSources.length > 0 && (
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-2.5">
-              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                Protein Sources
-              </p>
-              {proteinSources.map((src) => (
-                <SourceRow
-                  key={src.name}
-                  name={src.name}
-                  grams={src.grams}
-                  maxGrams={proteinSources[0].grams}
-                />
-              ))}
+            <div className="space-y-3">
+              {/* Eaten | Remaining | Target stats row */}
+              <div className="grid grid-cols-3 gap-2">
+                <StatPill label="Eaten"     value={`${eaten}g`}                 color="text-violet-400" bg="bg-violet-950/40" border="border-violet-800/50" />
+                <StatPill label="Remaining" value={`${Math.max(0, target - eaten)}g`} color="text-gray-300"   bg="bg-gray-800/60"    border="border-gray-700"      />
+                <StatPill label="Target"    value={`${target}g`}                color="text-emerald-400" bg="bg-emerald-950/40" border="border-emerald-800/50" />
+              </div>
+
+              {/* Protein sources */}
+              {proteinSources.length > 0 && (
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-2.5">
+                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                    Protein Sources
+                  </p>
+                  {proteinSources.map((src) => (
+                    <SourceRow
+                      key={src.name}
+                      name={src.name}
+                      grams={src.grams}
+                      maxGrams={proteinSources[0].grams}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* Booster if shortfall */}
-          <ProteinBooster
-            slots={slots}
-            skippedTypes={skippedTypes}
-            dailyTarget={target}
-          />
-        </Section>
+          {/* Per-meal bars + booster — side by side on md+ */}
+          <div className="md:grid md:grid-cols-2 md:gap-4 space-y-3 md:space-y-0">
+            {slots.length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">
+                  Per-Meal Breakdown
+                </p>
+                <ProteinPerMealBar slots={slots} dailyTarget={target} />
+              </div>
+            )}
 
-        {/* ════════════════════════════════════════════════════════════════════
-            SECTION 2 — MACROS
-        ════════════════════════════════════════════════════════════════════ */}
-        <Section title="Macros">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-4">
-
-            {/* Calories */}
-            <NutrientBar
-              label="Calories"
-              value={totals.calories}
-              unit="kcal"
-              target={macroTargets.calories}
-              color="text-emerald-400"
-              trackColor="bg-emerald-950/50"
-            />
-
-            {/* Protein — bold hero bar */}
-            <NutrientBar
-              label="Protein"
-              value={eaten}
-              unit="g"
-              target={target}
-              color="text-violet-400"
-              trackColor="bg-violet-950/50"
-              bold
-            />
-
-            {/* Carbs */}
-            <NutrientBar
-              label="Carbs"
-              value={totals.carbs}
-              unit="g"
-              target={macroTargets.carbs}
-              color="text-amber-400"
-              trackColor="bg-amber-950/40"
-            />
-
-            {/* Fat */}
-            <NutrientBar
-              label="Fat"
-              value={totals.fat}
-              unit="g"
-              target={macroTargets.fat}
-              color="text-pink-400"
-              trackColor="bg-pink-950/40"
-            />
-
-            {/* Fiber */}
-            <NutrientBar
-              label="Fiber"
-              value={totals.fiber}
-              unit="g"
-              target={macroTargets.fiber ?? 30}
-              color="text-blue-400"
-              trackColor="bg-blue-950/40"
+            <ProteinBooster
+              slots={slots}
+              skippedTypes={skippedTypes}
+              dailyTarget={target}
             />
           </div>
         </Section>
 
-        {/* ════════════════════════════════════════════════════════════════════
-            SECTION 3 — GLOW NUTRIENTS
-        ════════════════════════════════════════════════════════════════════ */}
-        <Section title="Glow Nutrients">
-          <GlowNutrients totals={totals} slots={activeSlots} />
-        </Section>
+        {/* ═══ SECTION 2 & 3 — Macros + Glow side by side on lg+ ═══════════ */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-6 lg:space-y-0">
+          <Section title="Macros">
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-4">
+              <NutrientBar label="Calories" value={totals.calories} unit="kcal" target={macroTargets.calories} color="text-emerald-400" trackColor="bg-emerald-950/50" />
+              <NutrientBar label="Protein" value={eaten} unit="g" target={target} color="text-violet-400" trackColor="bg-violet-950/50" bold />
+              <NutrientBar label="Carbs" value={totals.carbs} unit="g" target={macroTargets.carbs} color="text-amber-400" trackColor="bg-amber-950/40" />
+              <NutrientBar label="Fat" value={totals.fat} unit="g" target={macroTargets.fat} color="text-pink-400" trackColor="bg-pink-950/40" />
+              <NutrientBar label="Fiber" value={totals.fiber} unit="g" target={macroTargets.fiber ?? 30} color="text-blue-400" trackColor="bg-blue-950/40" />
+            </div>
+          </Section>
+
+          <Section title="Glow Nutrients">
+            <GlowNutrients totals={totals} slots={activeSlots} />
+          </Section>
+        </div>
 
         {/* ════════════════════════════════════════════════════════════════════
             SECTION 4 — WEEKLY TREND

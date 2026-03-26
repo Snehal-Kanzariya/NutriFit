@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(cd \"C:/Users/sneha/OneDrive/Desktop/Snehal Personal/Nutrifit\" && npm run build 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\sneha\\\\OneDrive\\\\Desktop\\\\Snehal Personal\\\\Nutrifit\" && npm run build 2>&1 | tail -25)",
+      "Bash(cd \"C:\\\\Users\\\\sneha\\\\OneDrive\\\\Desktop\\\\Snehal Personal\\\\Nutrifit\" && npm run build 2>&1)",
+      "Bash(cd \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/Nutrifit\" && npm run build 2>&1)",
+      "Read(//c/Users/sneha/OneDrive/Desktop/Snehal Personal/**)",
+      "Bash(npx create-next-app@latest nutrifit-next --js --app --tailwind --eslint --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(mkdir -p \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/services\" && mkdir -p \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/data\" && cp \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/Nutrifit/src/services/\"*.js \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/services/\" && cp \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/Nutrifit/src/services/\"*.json \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/data/\" && echo \"services+data copied\")",
+      "Bash(cp -r \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/Nutrifit/src/services/.\" \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/services/\" && echo \"services copied\" && cp -r \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/Nutrifit/src/data/.\" \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/data/\" && echo \"data copied\")",
+      "Bash(mkdir -p \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/pages-src\" && cp -r \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/Nutrifit/src/pages/.\" \"/c/Users/sneha/OneDrive/Desktop/Snehal Personal/nutrifit-next/pages-src/\" && echo \"pages-src copied\")"
+    ]
+  }
+}

@@ -83,7 +83,7 @@ function ConfirmModal({ open, onConfirm, onCancel }) {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-sm bg-gray-900 border border-gray-700 rounded-2xl p-6 z-50"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-sm bg-gray-900 border border-gray-700 rounded-2xl p-6 z-50 md:max-w-md"
           >
             <div className="flex flex-col items-center text-center gap-3">
               <div className="w-12 h-12 rounded-full bg-rose-900/40 border border-rose-700/50 flex items-center justify-center">
@@ -168,81 +168,88 @@ export default function Settings() {
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}
-      <header className="px-4 pt-5 pb-3">
+      <header className="px-4 md:px-6 pt-5 pb-3">
         <h1 className="text-lg font-bold text-white">Settings</h1>
         <p className="text-xs text-gray-500 mt-0.5">Preferences and data</p>
       </header>
 
-      <div className="px-4 pb-8 space-y-5">
+      <div className="px-4 md:px-6 pb-8 space-y-5 max-w-3xl">
 
-        {/* ── SCHEDULE ──────────────────────────────────────────────────── */}
-        <Section title="Schedule">
-          <Row
-            label="Ask me daily"
-            sublabel="Morning check-in picks activity and protein each day"
-            right={<Toggle value={askDaily} onChange={toggleAskDaily} />}
-          />
-          <Row
-            label="Use saved routines"
-            sublabel="Auto-apply a routine without daily check-in"
-            right={<Toggle value={!askDaily} onChange={(v) => toggleAskDaily(!v)} />}
-          />
-        </Section>
+        {/* ── Two-column on lg+ ───────────────────────────────────────────── */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-5 lg:space-y-0">
+          <div className="space-y-5">
+            {/* ── SCHEDULE ────────────────────────────────────────────────── */}
+            <Section title="Schedule">
+              <Row
+                label="Ask me daily"
+                sublabel="Morning check-in picks activity and protein each day"
+                right={<Toggle value={askDaily} onChange={toggleAskDaily} />}
+              />
+              <Row
+                label="Use saved routines"
+                sublabel="Auto-apply a routine without daily check-in"
+                right={<Toggle value={!askDaily} onChange={(v) => toggleAskDaily(!v)} />}
+              />
+            </Section>
 
-        {/* ── PROTEIN ───────────────────────────────────────────────────── */}
-        <Section title="Protein">
-          <Row
-            label="Default protein target"
-            sublabel="Used when no check-in is done"
-            right={
-              <span className="text-sm font-bold text-violet-400">{defaultProtein}g</span>
-            }
-          />
-        </Section>
+            {/* ── PROTEIN ─────────────────────────────────────────────────── */}
+            <Section title="Protein">
+              <Row
+                label="Default protein target"
+                sublabel="Used when no check-in is done"
+                right={
+                  <span className="text-sm font-bold text-violet-400">{defaultProtein}g</span>
+                }
+              />
+            </Section>
+          </div>
 
-        {/* ── DATA ──────────────────────────────────────────────────────── */}
-        <Section title="Data">
-          <Row
-            label={exportDone ? 'Exported!' : 'Export data as JSON'}
-            sublabel="Download your profile, meals, and history"
-            right={
-              exportDone
-                ? <CheckCircle size={18} className="text-emerald-400" />
-                : <Download size={18} className="text-gray-400" />
-            }
-            onClick={handleExport}
-          />
-          <Row
-            label={resetting ? 'Resetting…' : 'Reset all data'}
-            sublabel="Permanently deletes everything. Cannot be undone."
-            right={<Trash2 size={18} className="text-rose-400" />}
-            onClick={() => setResetModal(true)}
-            destructive
-          />
-        </Section>
+          <div className="space-y-5">
+            {/* ── DATA ────────────────────────────────────────────────────── */}
+            <Section title="Data">
+              <Row
+                label={exportDone ? 'Exported!' : 'Export data as JSON'}
+                sublabel="Download your profile, meals, and history"
+                right={
+                  exportDone
+                    ? <CheckCircle size={18} className="text-emerald-400" />
+                    : <Download size={18} className="text-gray-400" />
+                }
+                onClick={handleExport}
+              />
+              <Row
+                label={resetting ? 'Resetting…' : 'Reset all data'}
+                sublabel="Permanently deletes everything. Cannot be undone."
+                right={<Trash2 size={18} className="text-rose-400" />}
+                onClick={() => setResetModal(true)}
+                destructive
+              />
+            </Section>
 
-        {/* ── ABOUT ─────────────────────────────────────────────────────── */}
-        <Section title="About">
-          <Row
-            label="NutriFit"
-            sublabel="AI-powered Indian protein nutrition guide"
-            right={<Info size={16} className="text-gray-600" />}
-          />
-          <Row
-            label="Version"
-            right={<span className="text-xs text-gray-500 font-mono">{appVersion}</span>}
-          />
-          <Row
-            label="AI Providers"
-            sublabel="Gemini → Groq → OpenRouter → local fallback"
-            right={<span className="text-xs text-emerald-500 font-semibold">FREE</span>}
-          />
-          <Row
-            label="Storage"
-            sublabel="All data stays on your device (IndexedDB)"
-            right={<span className="text-xs text-gray-500">Local</span>}
-          />
-        </Section>
+            {/* ── ABOUT ───────────────────────────────────────────────────── */}
+            <Section title="About">
+              <Row
+                label="NutriFit"
+                sublabel="AI-powered Indian protein nutrition guide"
+                right={<Info size={16} className="text-gray-600" />}
+              />
+              <Row
+                label="Version"
+                right={<span className="text-xs text-gray-500 font-mono">{appVersion}</span>}
+              />
+              <Row
+                label="AI Providers"
+                sublabel="Gemini → Groq → OpenRouter → local fallback"
+                right={<span className="text-xs text-emerald-500 font-semibold">FREE</span>}
+              />
+              <Row
+                label="Storage"
+                sublabel="All data stays on your device (IndexedDB)"
+                right={<span className="text-xs text-gray-500">Local</span>}
+              />
+            </Section>
+          </div>
+        </div>
 
       </div>
 

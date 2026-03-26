@@ -743,10 +743,10 @@ export default function Onboarding() {
 
   return (
     <div className="flex justify-center min-h-screen bg-gray-950">
-      <div className="w-full max-w-[480px] min-h-screen flex flex-col">
+      <div className="w-full max-w-[480px] md:max-w-lg min-h-screen flex flex-col mx-auto">
 
         {/* Header */}
-        <div className="px-5 pt-12 pb-4 flex-shrink-0">
+        <div className="px-5 md:px-8 pt-12 pb-4 flex-shrink-0">
           {/* Back button */}
           {step > 0 && (
             <button
@@ -780,7 +780,7 @@ export default function Onboarding() {
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-8">
+        <div className="flex-1 overflow-y-auto px-5 md:px-8 pb-8">
           <AnimatePresence mode="wait" initial={false} custom={direction}>
             <motion.div
               key={step}
@@ -797,7 +797,7 @@ export default function Onboarding() {
         </div>
 
         {/* Footer CTA */}
-        <div className="px-5 pb-10 pt-4 flex-shrink-0 bg-gradient-to-t from-gray-950 via-gray-950/95 to-transparent">
+        <div className="px-5 md:px-8 pb-10 pt-4 flex-shrink-0 bg-gradient-to-t from-gray-950 via-gray-950/95 to-transparent">
           {step < TOTAL_STEPS - 1 ? (
             <button
               onClick={goNext}

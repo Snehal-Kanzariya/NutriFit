@@ -39,8 +39,12 @@ export const useProfileStore = create(
       tdee: null,
       goalCalories: null,
 
+      // Trainer mode
+      trainerMode: false,
+
       // Actions
       setProfile: (data) => set(data),
+      setTrainerMode: (val) => set({ trainerMode: val }),
 
       setProteinTarget: (val) => set({ proteinTarget: val }),
 

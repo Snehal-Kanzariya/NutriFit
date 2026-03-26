@@ -374,7 +374,7 @@ export default function Profile() {
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}
-      <header className="flex items-center gap-3 px-4 pt-5 pb-3">
+      <header className="flex items-center gap-3 px-4 md:px-6 pt-5 pb-3">
         <div className="w-9 h-9 rounded-full bg-violet-600/20 border border-violet-700/50 flex items-center justify-center">
           <User size={16} className="text-violet-400" />
         </div>
@@ -384,102 +384,111 @@ export default function Profile() {
         </div>
       </header>
 
-      <div className="px-4 pb-28 space-y-6">
+      <div className="px-4 md:px-6 pb-28 lg:pb-8 space-y-6">
 
-        {/* ── ABOUT YOU ──────────────────────────────────────────────────── */}
-        <Section title="About You">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-4">
-            <Field label="Name">
-              <TextInput value={name} onChange={setName} placeholder="Your name" />
-            </Field>
-            <div className="grid grid-cols-3 gap-3">
-              <Field label="Age">
-                <TextInput value={age} onChange={setAge} placeholder="25" type="number" unit="yr" />
-              </Field>
-              <Field label="Weight">
-                <TextInput value={weight} onChange={setWeight} placeholder="70" type="number" unit="kg" />
-              </Field>
-              <Field label="Height">
-                <TextInput value={height} onChange={setHeight} placeholder="170" type="number" unit="cm" />
-              </Field>
-            </div>
-          </div>
-        </Section>
-
-        {/* ── GOAL & DIET ────────────────────────────────────────────────── */}
-        <Section title="Goal & Diet">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-4">
-            <Field label="Goal">
-              <PillGroup options={GOALS} value={goal} onChange={setGoal} />
-            </Field>
-            <Field label="Diet">
-              <PillGroup options={DIETS} value={diet} onChange={setDiet} />
-            </Field>
-            <Field label="Activity Level">
-              <PillGroup options={ACTIVITIES} value={activityLevel} onChange={setActivityLevel} />
-            </Field>
-          </div>
-        </Section>
-
-        {/* ── PROTEIN TARGET (prominent) ─────────────────────────────────── */}
-        <Section title="Protein Target" accent="text-violet-400">
-          <div className="bg-gray-900 border border-violet-800/50 rounded-2xl p-5">
-            <ProteinTargetPicker
-              value={proteinTarget}
-              onChange={setProteinTarget}
-              recommended={recommended}
-            />
-          </div>
-        </Section>
-
-        {/* ── SCHEDULE ───────────────────────────────────────────────────── */}
-        <Section title="Schedule">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-white">Today's Plan</p>
-                <p className="text-xs text-gray-500 mt-0.5">Adjust activity, timing, cook toggle</p>
+        {/* ── Two-column layout on lg+ ────────────────────────────────────── */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-6 lg:space-y-0">
+          {/* Left column */}
+          <div className="space-y-6">
+            {/* ── ABOUT YOU ────────────────────────────────────────────────── */}
+            <Section title="About You">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-4">
+                <Field label="Name">
+                  <TextInput value={name} onChange={setName} placeholder="Your name" />
+                </Field>
+                <div className="grid grid-cols-3 gap-3">
+                  <Field label="Age">
+                    <TextInput value={age} onChange={setAge} placeholder="25" type="number" unit="yr" />
+                  </Field>
+                  <Field label="Weight">
+                    <TextInput value={weight} onChange={setWeight} placeholder="70" type="number" unit="kg" />
+                  </Field>
+                  <Field label="Height">
+                    <TextInput value={height} onChange={setHeight} placeholder="170" type="number" unit="cm" />
+                  </Field>
+                </div>
               </div>
-              <ChevronRight size={16} className="text-gray-600" />
-            </div>
-            <ScheduleSheet />
-          </div>
-        </Section>
+            </Section>
 
-        {/* ── SAVED ROUTINES ─────────────────────────────────────────────── */}
-        <Section title="Saved Routines">
-          <RoutineManager
-            routines={localRoutines}
-            onAdd={handleAddRoutine}
-            onEdit={handleEditRoutine}
-            onDelete={handleDeleteRoutine}
-          />
-        </Section>
+            {/* ── GOAL & DIET ──────────────────────────────────────────────── */}
+            <Section title="Goal & Diet">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-4">
+                <Field label="Goal">
+                  <PillGroup options={GOALS} value={goal} onChange={setGoal} />
+                </Field>
+                <Field label="Diet">
+                  <PillGroup options={DIETS} value={diet} onChange={setDiet} />
+                </Field>
+                <Field label="Activity Level">
+                  <PillGroup options={ACTIVITIES} value={activityLevel} onChange={setActivityLevel} />
+                </Field>
+              </div>
+            </Section>
 
-        {/* ── ALLERGIES ──────────────────────────────────────────────────── */}
-        <Section title="Allergies / Avoid">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-            <AllergyInput tags={allergies} onChange={setAllergies} />
+            {/* ── PROTEIN TARGET (prominent) ───────────────────────────────── */}
+            <Section title="Protein Target" accent="text-violet-400">
+              <div className="bg-gray-900 border border-violet-800/50 rounded-2xl p-5">
+                <ProteinTargetPicker
+                  value={proteinTarget}
+                  onChange={setProteinTarget}
+                  recommended={recommended}
+                />
+              </div>
+            </Section>
           </div>
-        </Section>
 
-        {/* ── BUDGET ─────────────────────────────────────────────────────── */}
-        <Section title="Daily Budget">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-            <TextInput
-              value={budget}
-              onChange={setBudget}
-              placeholder="Optional — e.g. 200"
-              type="number"
-              unit="₹/day"
-            />
+          {/* Right column */}
+          <div className="space-y-6">
+            {/* ── SCHEDULE ─────────────────────────────────────────────────── */}
+            <Section title="Schedule">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Today's Plan</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Adjust activity, timing, cook toggle</p>
+                  </div>
+                  <ChevronRight size={16} className="text-gray-600" />
+                </div>
+                <ScheduleSheet />
+              </div>
+            </Section>
+
+            {/* ── SAVED ROUTINES ───────────────────────────────────────────── */}
+            <Section title="Saved Routines">
+              <RoutineManager
+                routines={localRoutines}
+                onAdd={handleAddRoutine}
+                onEdit={handleEditRoutine}
+                onDelete={handleDeleteRoutine}
+              />
+            </Section>
+
+            {/* ── ALLERGIES ────────────────────────────────────────────────── */}
+            <Section title="Allergies / Avoid">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                <AllergyInput tags={allergies} onChange={setAllergies} />
+              </div>
+            </Section>
+
+            {/* ── BUDGET ───────────────────────────────────────────────────── */}
+            <Section title="Daily Budget">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                <TextInput
+                  value={budget}
+                  onChange={setBudget}
+                  placeholder="Optional — e.g. 200"
+                  type="number"
+                  unit="₹/day"
+                />
+              </div>
+            </Section>
           </div>
-        </Section>
+        </div>
 
       </div>
 
       {/* ── Sticky save bar ──────────────────────────────────────────────── */}
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 z-30">
+      <div className="fixed bottom-20 lg:bottom-6 left-1/2 lg:left-auto lg:right-6 lg:translate-x-0 -translate-x-1/2 w-full max-w-md lg:max-w-xs px-4 lg:px-0 z-30">
         <button
           onClick={handleSave}
           disabled={saving}

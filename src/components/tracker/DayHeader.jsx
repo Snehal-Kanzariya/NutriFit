@@ -32,11 +32,11 @@ export default function DayHeader() {
   }).format(now).toUpperCase()
 
   return (
-    <div className="px-4 pt-4 pb-1">
-      <p className="text-xs text-gray-500 font-medium tracking-wide">
+    <div className="px-4 md:px-6 pt-4 pb-1">
+      <p className="text-xs md:text-sm text-gray-500 font-medium tracking-wide">
         {dateStr} · {timeStr} IST
       </p>
-      <h2 className="text-xl font-bold text-white mt-0.5">
+      <h2 className="text-xl md:text-2xl font-bold text-white mt-0.5">
         {getGreeting(now.getHours())}{name ? `, ${name}` : ''} 👋
       </h2>
     </div>

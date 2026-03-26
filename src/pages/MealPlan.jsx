@@ -131,7 +131,7 @@ export default function MealPlan() {
   const { isGenerating } = useMealPlanStore()
   if (isGenerating) {
     return (
-      <div className="px-4 pt-5 pb-8 space-y-3">
+      <div className="px-4 md:px-6 pt-5 pb-8 space-y-3 max-w-3xl">
         <div className="h-6 w-40 bg-gray-800 rounded-full animate-pulse mb-4" />
         {[1, 2, 3, 4].map((i) => <MealCardSkeleton key={i} />)}
       </div>
@@ -144,7 +144,7 @@ export default function MealPlan() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center gap-4">
         <span className="text-5xl">🍽️</span>
         <h2 className="text-white font-bold text-xl">No plan yet</h2>
-        <p className="text-gray-500 text-sm">Complete your morning check-in to generate today's meals.</p>
+        <p className="text-gray-500 text-sm max-w-sm">Complete your morning check-in to generate today's meals.</p>
         <button
           onClick={() => navigate('/dashboard')}
           className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-3 rounded-2xl transition-colors"
@@ -158,7 +158,7 @@ export default function MealPlan() {
   return (
     <div className="flex flex-col min-h-full">
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-4 pt-5 pb-3">
+      <header className="flex items-center justify-between px-4 md:px-6 pt-5 pb-3">
         <div>
           <h1 className="text-lg font-bold text-white">Today's Meals</h1>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -177,42 +177,47 @@ export default function MealPlan() {
         </button>
       </header>
 
-      <div className="px-4 pb-8 space-y-3">
+      <div className="px-4 md:px-6 pb-8 space-y-3">
         {/* ── Skipped meal banner (plan-level skips) ────────────────────── */}
         <SkippedMealBanner />
 
         {/* ── Live meal timeline with trackable cards ────────────────────── */}
-        <MealTimeline
-          slots={slots}
-          dailyTarget={target}
-          onCheck={handleMealCheck}
-          onTargetHit={() => {}}
-        />
+        <div className="max-w-3xl">
+          <MealTimeline
+            slots={slots}
+            dailyTarget={target}
+            onCheck={handleMealCheck}
+            onTargetHit={() => {}}
+          />
+        </div>
 
-        {/* ── Supplement note (shown when target exceeds DB capacity) ──── */}
-        {(() => {
-          const slotTypes = slots.map(s => s.type)
-          const { needsSupplement, achievable } = getAchievableProtein(target, slotTypes)
-          if (!needsSupplement) return null
-          return (
-            <div className="bg-blue-950/40 border border-blue-800/50 rounded-2xl px-4 py-3 flex gap-3 items-start">
-              <span className="text-lg mt-0.5">💊</span>
-              <div>
-                <p className="text-blue-300 text-xs font-semibold">High protein target</p>
-                <p className="text-blue-400/80 text-[11px] mt-0.5">
-                  Food covers ~{achievable}g. Add protein powder or supplements to reach your {target}g goal.
-                </p>
+        {/* ── Bottom cards — side by side on md+ ───────────────────────── */}
+        <div className="md:grid md:grid-cols-2 md:gap-4 space-y-3 md:space-y-0">
+          {/* ── Supplement note (shown when target exceeds DB capacity) ── */}
+          {(() => {
+            const slotTypes = slots.map(s => s.type)
+            const { needsSupplement, achievable } = getAchievableProtein(target, slotTypes)
+            if (!needsSupplement) return null
+            return (
+              <div className="bg-blue-950/40 border border-blue-800/50 rounded-2xl px-4 py-3 flex gap-3 items-start">
+                <span className="text-lg mt-0.5">💊</span>
+                <div>
+                  <p className="text-blue-300 text-xs font-semibold">High protein target</p>
+                  <p className="text-blue-400/80 text-[11px] mt-0.5">
+                    Food covers ~{achievable}g. Add protein powder or supplements to reach your {target}g goal.
+                  </p>
+                </div>
               </div>
-            </div>
-          )
-        })()}
+            )
+          })()}
 
-        {/* ── Protein booster card ───────────────────────────────────────── */}
-        <ProteinBooster
-          slots={slots}
-          skippedTypes={skippedTypes}
-          dailyTarget={target}
-        />
+          {/* ── Protein booster card ─────────────────────────────────────── */}
+          <ProteinBooster
+            slots={slots}
+            skippedTypes={skippedTypes}
+            dailyTarget={target}
+          />
+        </div>
       </div>
     </div>
   )

@@ -74,7 +74,7 @@ export default function MealSwapSheet({ open, onClose, slot, currentMeal, diet, 
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-gray-900 border-t border-gray-800 rounded-t-3xl z-50 pb-8"
+            className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-gray-900 border-t border-gray-800 rounded-t-3xl z-50 pb-8 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-3xl md:border md:max-h-[85vh] md:overflow-y-auto"
           >
             {/* Handle + header */}
             <div className="pt-3 pb-3 px-4 border-b border-gray-800">

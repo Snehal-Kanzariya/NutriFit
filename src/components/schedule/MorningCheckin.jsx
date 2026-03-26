@@ -108,7 +108,7 @@ export default function MorningCheckin() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y:  0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="p-4 space-y-5"
+      className="p-4 md:p-6 space-y-5 max-w-2xl mx-auto"
     >
       {/* Header */}
       <div className="bg-gradient-to-br from-emerald-900/60 to-gray-900 border border-emerald-800/40 rounded-2xl px-4 py-3">

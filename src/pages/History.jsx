@@ -234,7 +234,7 @@ export default function History() {
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}
-      <header className="px-4 pt-5 pb-3">
+      <header className="px-4 md:px-6 pt-5 pb-3">
         <h1 className="text-lg font-bold text-white">History</h1>
         <p className="text-xs text-gray-500 mt-0.5">Last 7 days</p>
       </header>
@@ -244,31 +244,30 @@ export default function History() {
           <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="px-4 pb-8 space-y-6">
+        <div className="px-4 md:px-6 pb-8 space-y-6">
 
-          {/* ── PROTEIN STREAK ──────────────────────────────────────────── */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-r from-orange-950/60 to-gray-900 border border-orange-800/50 rounded-2xl p-4 flex items-center gap-4"
-          >
-            <div className="w-12 h-12 rounded-full bg-orange-900/50 border border-orange-700/50 flex items-center justify-center shrink-0">
-              <Flame size={22} className="text-orange-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-black text-white">
-                {streak > 0 ? `🔥 ${streak} day${streak !== 1 ? 's' : ''}` : '—'}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {streak > 0
-                  ? 'protein streak! Keep it going!'
-                  : 'Hit your target today to start a streak!'}
-              </p>
-            </div>
-          </motion.div>
+          {/* ── Streak + Weekly Average — row on md+ ───────────────────── */}
+          <div className="md:grid md:grid-cols-3 md:gap-4 space-y-4 md:space-y-0">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-r from-orange-950/60 to-gray-900 border border-orange-800/50 rounded-2xl p-4 flex items-center gap-4 md:col-span-1"
+            >
+              <div className="w-12 h-12 rounded-full bg-orange-900/50 border border-orange-700/50 flex items-center justify-center shrink-0">
+                <Flame size={22} className="text-orange-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-black text-white">
+                  {streak > 0 ? `🔥 ${streak} day${streak !== 1 ? 's' : ''}` : '—'}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {streak > 0
+                    ? 'protein streak!'
+                    : 'Hit target to start!'}
+                </p>
+              </div>
+            </motion.div>
 
-          {/* ── WEEKLY AVERAGE ──────────────────────────────────────────── */}
-          <div className="grid grid-cols-2 gap-3">
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
               <p className="text-2xl font-black text-violet-400 tabular-nums">{weeklyAvg}g</p>
               <p className="text-xs text-gray-500 mt-1">Avg protein / day</p>
@@ -282,70 +281,73 @@ export default function History() {
             </div>
           </div>
 
-          {/* ── BAR CHART ───────────────────────────────────────────────── */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-              7-Day Protein
-            </p>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={chartData} barCategoryGap="35%" margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#1f2937" />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fill: '#6b7280', fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fill: '#6b7280', fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  domain={[0, Math.max(maxTarget * 1.2, 100)]}
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(139,92,246,0.08)' }} />
-                <ReferenceLine
-                  y={maxTarget}
-                  stroke="#8b5cf6"
-                  strokeDasharray="4 4"
-                  strokeOpacity={0.6}
-                  label={{ value: `${maxTarget}g`, fill: '#8b5cf6', fontSize: 10, position: 'insideTopRight' }}
-                />
-                <Bar dataKey="actual" radius={[5, 5, 0, 0]}>
-                  {chartData.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill={hitTarget(entry.actual, entry.target)
-                        ? '#7c3aed'
-                        : entry.actual > 0
-                          ? '#be123c'
-                          : '#1f2937'
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="flex items-center gap-4 mt-2 justify-center">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm bg-violet-600" />
-                <span className="text-[10px] text-gray-500">Hit target</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm bg-rose-700" />
-                <span className="text-[10px] text-gray-500">Missed</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 border-t-2 border-dashed border-violet-500/60" />
-                <span className="text-[10px] text-gray-500">Target</span>
+          {/* ── Chart + Day list — side by side on lg+ ────────────────── */}
+          <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-6 lg:space-y-0">
+            {/* ── BAR CHART ────────────────────────────────────────────── */}
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                7-Day Protein
+              </p>
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={chartData} barCategoryGap="35%" margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="#1f2937" />
+                  <XAxis
+                    dataKey="day"
+                    tick={{ fill: '#6b7280', fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: '#6b7280', fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                    domain={[0, Math.max(maxTarget * 1.2, 100)]}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(139,92,246,0.08)' }} />
+                  <ReferenceLine
+                    y={maxTarget}
+                    stroke="#8b5cf6"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.6}
+                    label={{ value: `${maxTarget}g`, fill: '#8b5cf6', fontSize: 10, position: 'insideTopRight' }}
+                  />
+                  <Bar dataKey="actual" radius={[5, 5, 0, 0]}>
+                    {chartData.map((entry, i) => (
+                      <Cell
+                        key={i}
+                        fill={hitTarget(entry.actual, entry.target)
+                          ? '#7c3aed'
+                          : entry.actual > 0
+                            ? '#be123c'
+                            : '#1f2937'
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex items-center gap-4 mt-2 justify-center">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-violet-600" />
+                  <span className="text-[10px] text-gray-500">Hit target</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-rose-700" />
+                  <span className="text-[10px] text-gray-500">Missed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 border-t-2 border-dashed border-violet-500/60" />
+                  <span className="text-[10px] text-gray-500">Target</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* ── DAY LIST ────────────────────────────────────────────────── */}
-          <div className="space-y-2">
-            {history.map((day) => (
-              <DayRow key={day.date} day={day} isToday={day.date === todayStr} />
-            ))}
+            {/* ── DAY LIST ──────────────────────────────────────────────── */}
+            <div className="space-y-2">
+              {history.map((day) => (
+                <DayRow key={day.date} day={day} isToday={day.date === todayStr} />
+              ))}
+            </div>
           </div>
 
         </div>

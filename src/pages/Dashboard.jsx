@@ -131,11 +131,11 @@ export default function Dashboard() {
       <Celebration visible={showCelebration} />
 
       {/* ── Day Header (date/time/greeting) ───────────────────────────────── */}
-      <div className="flex items-start justify-between pr-4">
+      <div className="flex items-start justify-between pr-4 md:pr-6">
         <DayHeader />
         <button
           onClick={() => navigate('/settings')}
-          className="mt-5 w-9 h-9 flex items-center justify-center bg-gray-800 rounded-full border border-gray-700 hover:border-gray-600 transition-colors shrink-0"
+          className="mt-5 w-9 h-9 flex items-center justify-center bg-gray-800 rounded-full border border-gray-700 hover:border-gray-600 transition-colors shrink-0 lg:hidden"
         >
           <Settings size={16} className="text-gray-400" />
         </button>
@@ -150,7 +150,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25 }}
-            className="mx-4 mb-1 flex items-center gap-2 bg-emerald-900/60 border border-emerald-700/60 rounded-xl px-4 py-2.5"
+            className="mx-4 md:mx-6 mb-1 flex items-center gap-2 bg-emerald-900/60 border border-emerald-700/60 rounded-xl px-4 py-2.5"
           >
             <span className="text-base">✅</span>
             <p className="text-emerald-300 text-xs font-semibold">Plan updated with your new settings</p>
@@ -158,39 +158,38 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* ── Hero: Live Protein Progress Ring (checked meals only) ────────── */}
-      <motion.section
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center py-5 px-4"
-      >
-        <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">
-          🎯 Today's Protein
-        </p>
-        <ProteinProgressRing eaten={liveProtein} target={target} size={200} />
-      </motion.section>
+      {/* ── Hero section — stacks on mobile, side-by-side on md+ ──────────── */}
+      <div className="md:grid md:grid-cols-2 md:gap-6 md:px-6 md:py-4">
+        {/* Protein Ring */}
+        <motion.section
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col items-center py-5 px-4 md:px-0"
+        >
+          <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">
+            🎯 Today's Protein
+          </p>
+          <ProteinProgressRing eaten={liveProtein} target={target} size={200} />
+        </motion.section>
 
-      {/* ── Completion stats ──────────────────────────────────────────────── */}
-      <div className="px-4 mb-3">
-        <CompletionStats
-          slots={slots}
-          proteinAccumulated={liveProtein}
-          proteinTarget={target}
-        />
-      </div>
-
-      {/* ── Daily Overview ────────────────────────────────────────────────── */}
-      <div className="px-4">
-        <DailyOverview
-          plan={plan}
-          goalCalories={goalCalories ?? 2000}
-          activity={todayActivity}
-        />
+        {/* Stats + Overview */}
+        <div className="space-y-3 px-4 md:px-0 md:py-5">
+          <CompletionStats
+            slots={slots}
+            proteinAccumulated={liveProtein}
+            proteinTarget={target}
+          />
+          <DailyOverview
+            plan={plan}
+            goalCalories={goalCalories ?? 2000}
+            activity={todayActivity}
+          />
+        </div>
       </div>
 
       {/* ── Tab bar ───────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 mx-4 mt-4 bg-gray-900 rounded-xl p-1 border border-gray-800">
+      <div className="flex gap-1 mx-4 md:mx-6 mt-4 bg-gray-900 rounded-xl p-1 border border-gray-800 max-w-xl">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -214,7 +213,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
-          className="px-4 mt-4"
+          className="px-4 md:px-6 mt-4"
         >
           {activeTab === 'meals' && (
             <MealsTab slots={slots} target={target} onCheck={handleMealCheck} />
@@ -225,7 +224,7 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* ── Change plan button ────────────────────────────────────────────── */}
-      <div className="px-4 mt-4 mb-2">
+      <div className="px-4 md:px-6 mt-4 mb-2 max-w-xl">
         <ScheduleSheet />
       </div>
     </div>
@@ -245,19 +244,19 @@ function MealsTab({ slots, target, onCheck }) {
 
   return (
     <div className="space-y-4 pb-4">
-      {/* Per-meal protein bars (quick overview) */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
-        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-          Per-Meal Protein
-        </h3>
-        <ProteinPerMealBar slots={slots} dailyTarget={target} />
+      {/* Per-meal protein bars + velocity — side by side on md+ */}
+      <div className="md:grid md:grid-cols-2 md:gap-4 space-y-4 md:space-y-0">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+            Per-Meal Protein
+          </h3>
+          <ProteinPerMealBar slots={slots} dailyTarget={target} />
+        </div>
+        <ProteinVelocity slots={slots} proteinTarget={target} />
       </div>
 
-      {/* Protein velocity */}
-      <ProteinVelocity slots={slots} proteinTarget={target} />
-
-      {/* Quick meal summary list */}
-      <div className="space-y-2">
+      {/* Quick meal summary list — grid on md+ */}
+      <div className="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
         {slots.map((slot) => (
           <div key={slot.type} className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
             <div className="flex-1 min-w-0">
